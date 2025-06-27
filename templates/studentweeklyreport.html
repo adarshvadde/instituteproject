@@ -1,0 +1,366 @@
+{% extends 'studenthome.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Work Report Details</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for longer content */
+            min-height: 100vh;
+            box-sizing: border-box;
+            overflow: auto;
+        }
+
+        .report-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            max-width: 1000px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .report-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .report-title {
+            font-size: 3.2em;
+            font-weight: 900;
+            color: #2c3e50;
+            line-height: 1.1;
+            text-transform: uppercase;
+            letter-spacing: -1.5px;
+            margin: 0 0 10px 0;
+            flex-basis: 100%;
+            text-align: Center;
+            position: relative;
+            padding-bottom: 5px;
+            border-bottom: 3px solid #3498db;
+            display: inline-block;
+        }
+
+        .report-title span {
+            display: inline;
+            font-size: 0.4em;
+            font-weight: 300;
+            color: #555;
+            text-transform: none;
+            vertical-align: super;
+            margin-left: 5px;
+            letter-spacing: normal;
+        }
+        
+        .report-title strong {
+            font-weight: 900;
+            color: #2c3e50;
+        }
+
+        .report-meta {
+            flex-basis: 100%;
+            display: flex;
+            flex-direction: row; /* Changed to row for side-by-side layout */
+            flex-wrap: wrap; /* Allows items to wrap to the next line */
+            gap: 20px; /* Space between meta details */
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8fbfd;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .meta-detail {
+            display: flex;
+            justify-content: space-between; /* Spread label and value */
+            align-items: center; /* Vertically align items */
+            font-size: 1.1em; /* Larger font for details */
+            width: calc(50% - 10px); /* Two columns with 20px gap (20px gap / 2 = 10px per side) */
+        }
+        /* Ensure the last item takes full width if there's an odd number for better alignment */
+        .report-meta .meta-detail:nth-last-child(1):nth-child(odd) {
+             width: 100%;
+        }
+
+        .meta-detail strong {
+            font-weight: 700;
+            color: #4a4a4a;
+            flex-shrink: 0; /* Prevent label from shrinking */
+            margin-right: 15px; /* Space between label and value */
+        }
+
+        .meta-detail span {
+            flex-grow: 1; /* Allow value to take up remaining space */
+            color: #333;
+            text-align: left; /* Align value to the right */
+        }
+
+        .activity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .activity-table th, .activity-table td {
+            padding: 12px 15px; /* Increased padding */
+            border: 1px solid #ebf1f5;
+            text-align: center;
+            font-size: 0.9em; /* Slightly larger font */
+            color: #444;
+            vertical-align: top;
+        }
+
+        .activity-table thead th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-bottom: 3px solid #2980b9;
+        }
+
+        .activity-table tbody tr:nth-child(even) {
+            background-color: #fdfdfd;
+        }
+        .activity-table tbody tr:nth-child(odd) {
+            background-color: #f8fbfd;
+        }
+
+        .activity-table .day-label {
+            background-color: #cce7ff;
+            font-weight: 700;
+            text-align: center; /* Center align for day names */
+            border-right: 2px solid #a6d5fa;
+            width: 120px; /* Adjusted width for day column */
+            color: #1d3557;
+        }
+
+        .activity-table .total-hours-row td {
+            background-color: #dbe9f6;
+            font-weight: 800;
+            text-align: right;
+            padding-right: 20px;
+            border-top: 2px solid #a6d5fa;
+            color: #2c3e50;
+        }
+
+        .activity-table .total-hours-row .total-label {
+            text-align: left;
+            background-color: transparent;
+            border-right: none;
+            color: #2c3e50;
+            font-weight: 800;
+        }
+
+        .signatures {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-top: 40px; /* More space above signatures */
+            padding-top: 20px; /* More padding above dashed line */
+            border-top: 1px dashed #c0c0c0;
+        }
+
+        .signature-block {
+            flex-basis: calc(33% - 30px);
+            text-align: center;
+            margin-bottom: 25px;
+            min-width: 180px;
+        }
+
+        .signature-line {
+            display: block;
+            width: 90%;
+            height: 2px;
+            background-color: #34495e;
+            margin: 35px auto 8px auto;
+            border-radius: 1px;
+        }
+
+        .signature-label {
+            font-size: 0.95em;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            .report-container {
+                padding: 25px;
+                border-radius: 10px;
+            }
+            .report-title {
+                font-size: 2.2em;
+                letter-spacing: -1px;
+            }
+            .report-meta {
+                flex-direction: column; /* Stack meta details on small screens */
+                gap: 10px; /* Adjust gap for stacked items */
+                padding: 10px;
+            }
+            .meta-detail {
+                width: 100%; /* Full width when stacked */
+                flex-direction: column; /* Stack label and value vertically on mobile */
+                align-items: flex-start;
+                font-size: 1em;
+            }
+            .meta-detail strong {
+                margin-bottom: 5px;
+            }
+            .meta-detail span {
+                text-align: left; /* Align value to left when stacked */
+            }
+            .activity-table th, .activity-table td {
+                padding: 8px 10px;
+                font-size: 0.8em;
+            }
+            .activity-table .day-label {
+                width: 90px;
+            }
+            .signatures {
+                flex-direction: column;
+                align-items: center;
+                margin-top: 30px;
+            }
+            .signature-block {
+                flex-basis: 100%;
+                max-width: 250px;
+                margin-bottom: 15px;
+            }
+            .signature-line {
+                margin-top: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .report-title {
+                font-size: 1.8em;
+            }
+            .activity-table th, .activity-table td {
+                padding: 6px 8px;
+                font-size: 0.75em;
+            }
+            .activity-table .day-label {
+                width: 80px;
+            }
+        }
+
+        /* Style for the Edit button */
+        .edit-button-container {
+            text-align: right;
+            margin-top: 25px;
+        }
+
+        .edit-button {
+            background-color: #007bff; /* A nice blue color */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            text-decoration: none; /* Remove underline for links acting as buttons */
+            transition: background-color 0.3s ease;
+        }
+
+        .edit-button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <h1 class="report-title">Weekly Student Report</h1> 
+            <div class="report-meta">
+                <div class="meta-detail">
+                    <strong>Student Name:</strong> <span>{{ report.student_name }}</span>
+                </div>
+                <div class="meta-detail">
+                    <strong>Student ID Number:</strong> <span>{{ report.student_id }}</span>
+                </div>
+                <div class="meta-detail">
+                    <strong>Report Period:</strong> <span>{{ report.report_date_from|date:"M d, Y" }} - {{ report.report_date_to|date:"M d, Y" }}</span>
+                </div>
+                <div class="meta-detail">
+                    <strong>Total Hours Worked:</strong> <span>{{ report.total_hours_class }}</span>
+                </div>
+                <div class="meta-detail">
+                    <strong>Submitted On:</strong> <span>{{ report.created_at|date:"M d, Y P" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <table class="activity-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">Day</th> 
+                    <th>Date</th>
+                    <th>Task Accomplished</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in daily_entries %}
+                    <tr>
+                        <td class="day-label">{{ entry.day_of_week }}</td>
+                        <td>{{ entry.entry_date|date:"M d, Y" }}</td>
+                        <td>{{ entry.task_accomplished }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">No daily entries found for this report.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-hours-row">
+                    <td colspan="2" class="total-label">Total Hours Work</td>
+                    <td>{{ report.total_hours_class }}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="signatures">
+            <div class="signature-block">
+                <span class="signature-line"></span>
+                <span class="signature-label">Approved By</span>
+            </div>
+            <div class="signature-block">
+                <span class="signature-line"></span>
+                <span class="signature-label">Signed By</span>
+            </div>
+            <div class="signature-block">
+                <span class="signature-line"></span>
+                <span class="signature-label">Date</span>
+            </div>
+        </div>
+
+        {# Add the Edit button here #}
+        <div class="edit-button-container">
+            <a href="/studentaddweeklyreport/{{links}}/{{ report.report_date_from|date:"Y-M-d" }}-{{ report.report_date_to|date:"Y-M-d" }}" class="edit-button">Edit Report</a>
+        </div>
+    </div>
+</body>
+</html>
+{% endblock %}

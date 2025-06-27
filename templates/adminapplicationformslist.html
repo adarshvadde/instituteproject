@@ -1,0 +1,89 @@
+
+{% extends "adminpage.html" %}
+{% load custom_fil %}
+{% block content %}
+<div id="students" class="page active">
+            <div class="page-header">
+                <h1>Application Forms</h1>
+                <div class="filter-controls">
+                    <label for="batchFilter" style="margin-bottom: 0;">Filter by Batch:</label>
+                    <select id="batchFilter">
+                        <option value="all">All Batches</option>
+                        <option value="Ignite">Ignite</option>
+                        <option value="Elite">Elite</option>
+                        <option value="Elite Premium">Elite Premium</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Photo</th>
+                            <th>Full Name</th>
+                            <th>Gender</th>
+                            <th>Batch</th>
+                            <th>Qualification</th>
+                            <th>Branch</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        {% for data in applications %}
+                        {% if  data.application  %}
+                                <tr class="student-row" data-batch="{{ data.application.model_name }}">
+                          <td>{{ data.application.studentid }}</td>
+                          <td>
+                            <a href="/adminapplicationformsstudent/{{adminlinks}}/{{data.application.unique_id.unique_id|get_id}}">
+                              {% if data.application.student_photo %}
+                                <img src="{{ data.application.student_photo.url }}" alt="Student Photo">
+                              {% endif %}
+                            </a>
+                          </td>
+                          <td>
+                            <a href="/adminapplicationformsstudent/{{adminlinks}}/{{data.application.unique_id.unique_id|get_id}}">
+                              {{ data.application.first_name }} {{ data.application.last_name }}
+                            </a>
+                          </td>
+                          <td>{{ data.application.gender }}</td>
+                          <td>{{ data.application.model_name }}</td>
+
+                          <td>{{ data.application.qualification }}</td>
+                          <td>{{ data.application.branch }}</td>
+                          <td>{{ data.application.email }}</td>
+                          <td>{{ data.application.mobile }}</td>
+                        </tr>
+                         {% endif %}
+                         
+                        {% endfor %}                    
+                    </tbody>
+                </table>
+            </div>
+        </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const batchFilter = document.getElementById('batchFilter');
+        const studentTableBody = document.getElementById('studentTableBody');
+        const studentRows = studentTableBody.querySelectorAll('.student-row');
+
+        batchFilter.addEventListener('change', function() {
+            const selectedBatch = this.value; // 'all', 'Ignite', 'Elite', etc.
+
+            studentRows.forEach(row => {
+                const rowBatch = row.dataset.batch; // Get the batch from data-batch attribute
+
+                if (selectedBatch === 'all' || rowBatch === selectedBatch) {
+                    row.style.display = ''; // Show the row
+                } else {
+                    row.style.display = 'none'; // Hide the row
+                }
+            });
+        });
+
+        // Initialize the filter on page load (e.g., to show all students initially)
+        batchFilter.dispatchEvent(new Event('change'));
+    });
+</script>
+{% endblock %}

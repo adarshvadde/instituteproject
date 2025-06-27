@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles for a clean, modern look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Lighter background for better contrast */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to the top */
+            min-height: 100vh;
+            padding: 2rem 1rem; /* Consistent padding around the main content */
+        }
+
+        /* Main container styling */
+        .portal-container {
+            max-width: 1200px; /* Increased max-width for more content space */
+            width: 100%;
+            background-color: #ffffff; /* Corrected to white */
+            border-radius: 1.25rem; /* More pronounced rounded corners */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08); /* Softer, larger shadow */
+            display: flex;
+            flex-direction: column; /* Always column layout for header, nav, and main content stacking */
+            gap: 2rem; /* Consistent gap between sections */
+            padding: 2.5rem; /* Generous internal padding */
+        }
+        
+        /* No specific flex-direction change needed for lg breakpoint now, as it's always column */
+        @media (min-width: 1024px) { 
+            .portal-container {
+                padding: 2rem; /* Slightly less padding on larger screens */
+            }
+        }
+
+        /* Header styling (now always visible) */
+        .portal-header {
+            text-align: center;
+            margin-bottom: 2rem; /* Consistent gap below header */
+        }
+        .portal-header h1 {
+            font-size: 2.5rem; /* Larger, more impactful heading */
+            font-weight: 800; /* Extra bold */
+            color: #1a202c; /* Darker text for prominence */
+            margin-bottom: 0.5rem;
+            line-height: 1.2; /* Tighter line height for large text */
+        }
+
+        .portal-header p {
+            font-size: 1.125rem; /* Slightly larger paragraph text */
+            color: #4a5568; /* Softer gray for descriptive text */
+        }
+
+        /* Navigation styling - always horizontal */
+        .main-nav {
+            background-color: #2563eb; /* Dark blue background for nav */
+            border-radius: 1rem; /* Rounded corners */
+            padding: 1rem 1.5rem; /* Adjusted padding for horizontal bar */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
+            flex-shrink: 0; /* Prevent shrinking */
+            display: flex;
+            flex-direction: row; /* Always horizontal */
+            flex-wrap: wrap; /* Allow items to wrap to next line on small screens */
+            justify-content: center; /* Center items by default */
+            gap: 0.75rem; /* Space between links */
+            width: 100%; /* Take full width */
+            margin-bottom: -1rem; /* Space below the navigation bar */
+        }
+
+        /* Hide 'Navigation' heading as it's a top bar now */
+        .main-nav h2 {
+            display: none; 
+        }
+
+        /* Navigation links */
+        .nav-link {
+            display: block; /* Make links block level */
+            padding: 0.8rem 1.2rem; /* More generous padding */
+            border-radius: 0.75rem; /* Softer rounded corners */
+            color: white; /* Default link color: white for contrast */
+            font-weight: 500;
+            transition: all 0.2s ease-in-out; /* Smooth transitions for all hover effects */
+            text-decoration: none; /* Remove underline */
+            flex-grow: 1; /* Allow links to grow to fill space */
+            text-align: center; /* Center text within horizontal links */
+        }
+
+        /* Active navigation link */
+        
+        
+        .nav-link:hover { /* Apply hover only if not active */
+            background-color: #3b82f6; /* Lighter blue background on hover */
+            color: white; /* Keep text white on hover */
+            transform: translateY(-3px); /* Slight lift effect on hover for horizontal menu */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* More pronounced shadow on hover */
+        }
+
+        /* Content area (main display area) */
+        .main-content {
+            flex-grow: 1; /* Allow content to take remaining space */
+            background-color: #ffffff;
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- Styles for content within main-content --- */
+        .content-header {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0; /* Subtle border under header */
+            padding-bottom: 1rem;
+        }
+
+        .content-card {
+            background-color: #fdfefe;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); /* Lighter shadow for inner cards */
+            border: 1px solid #edf2f7; /* Very subtle border */
+        }
+
+        .content-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2c5282; /* A slightly deeper blue for card titles */
+            margin-bottom: 1rem;
+        }
+
+        .content-card p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .content-grid {
+            display: grid;
+            gap: 1.5rem; /* Spacing between grid items */
+            grid-template-columns: 1fr; /* Single column by default */
+        }
+
+        @media (min-width: 768px) { /* Medium screens */
+            .content-grid {
+                grid-template-columns: repeat(2, 1fr); /* Two columns */
+            }
+        }
+
+        @media (min-width: 1024px) { /* Large screens */
+            .content-grid {
+                grid-template-columns: repeat(3, 1fr); /* Three columns */
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="portal-container">
+
+        <header class="portal-header">
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-1">Student Dashboard</h1>
+            <p class="text-lg text-gray-600">Welcome, {{applications.0.first_name}} {{applications.0.last_name}}{{applications.first_name}} {{applications.last_name}}!</p>
+        </header>
+
+        <nav class="main-nav">
+            <a href="/studentprofile/{{links}}" class="nav-link ">Profile</a>
+            <a href="/studentapplications/{{links}}" class="nav-link">Applications</a>
+            <a href="/studentapplicationform/{{links}}" class="nav-link">Application Form</a>
+            <a href="/studentattendance/{{links}}" class="nav-link">Attendance</a>
+            <a href="/studentweeklyreports/{{links}}" class="nav-link">Weekly Reports</a>
+            <a href="/studentweeklyreport/{{links}}" class="nav-link"> New Weekly Report</a> {# New menu item added here #}
+        </nav>
+
+        <main class="main-content">
+            {% block content %}
+                {% include 'studentprofilef.html' %}
+            {% endblock %}
+        </main>
+        
+    </div>
+</body>
+</html>

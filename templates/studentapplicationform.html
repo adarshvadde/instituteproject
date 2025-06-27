@@ -1,0 +1,624 @@
+{% extends 'studenthome.html'%}
+{% load static %}
+{% load custom_fil %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Application Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* --- Root Variables for easy theme changes --- */
+    :root {
+        --primary-color: #3498db; /* A vibrant blue for accents */
+        --secondary-color: #2c3e50; /* Darker blue for headings/strong text */
+        --background-color: #f8f9fa; /* Light greyish white background */
+        --card-background: #ffffff; /* White background for main container and fieldsets */
+        --text-color: #495057; /* Standard text color */
+        --border-color: #dee2e6; /* Light border color */
+        --input-border: #ced4da; /* Input border color */
+        --input-focus-border: #80bdff; /* Input focus border */
+        --shadow-light: rgba(0, 0, 0, 0.08); /* Soft light shadow */
+        --shadow-medium: rgba(0, 0, 0, 0.15); /* Slightly stronger shadow */
+        --placeholder-color: #a0a0a0; /* Color for placeholder text like "No Image Selected" */
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif; /* Modern font */
+      background-color: var(--background-color);
+      padding: 20px;
+      margin: 0;
+      color: var(--text-color);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased; /* Smoother text rendering */
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .container {
+      margin: 40px auto; /* Centered with top/bottom margin */
+      background: var(--card-background);
+      border-radius: 12px; /* Nicely rounded corners */
+      padding: 30px 40px; /* Generous internal spacing */
+      box-shadow: 0 10px 30px var(--shadow-medium); /* Prominent, soft shadow for depth */
+      overflow: hidden; /* Ensures any internal elements don't spill out */
+    }
+
+    h4, h2 {
+      text-align: center;
+      color: var(--secondary-color);
+      font-weight: 700;
+      margin-bottom: 30px;
+      position: relative;
+      padding-bottom: 10px;
+      font-size: 2.2em; /* Larger heading for emphasis */
+    }
+
+    h4::after, h2::after {
+      content: '';
+      display: block;
+      width: 90px; /* Wider underline */
+      height: 4px;
+      background: var(--primary-color);
+      margin: 10px auto 0;
+      border-radius: 2px;
+    }
+
+    fieldset {
+      border: 1px solid var(--border-color); /* Subtle border */
+      padding: 25px;
+      margin-bottom: 25px;
+      border-radius: 10px; /* Softly rounded corners */
+      box-shadow: 0 4px 15px var(--shadow-light); /* Gentle shadow for each section */
+      transition: all 0.3s ease-in-out; /* Smooth transition for hover effects */
+    }
+
+    fieldset:hover {
+      box-shadow: 0 6px 20px var(--shadow-medium); /* Slightly lift on hover */
+      border-color: var(--primary-color); /* Highlight border on hover */
+    }
+
+    legend {
+      font-weight: 600;
+      color: var(--primary-color);
+      padding: 0 15px; /* Padding around legend text */
+      font-size: 1.25em; /* Larger legend text */
+      background-color: var(--card-background); /* Ensures legend background matches fieldset */
+      border-radius: 5px;
+      transform: translateY(-50%); /* Visually pulls the legend up from the border */
+      margin-left: 10px; /* Slight indent */
+      position: relative;
+      z-index: 1; /* Ensures legend is on top of border */
+    }
+
+    .rows {
+      display: flex;
+      flex-wrap: wrap; /* Allows items to wrap to next line */
+      gap: 20px 30px; /* Spacing between rows and columns */
+      margin-top: 15px;
+    }
+
+    label {
+      flex: 1 1 calc(50% - 15px); /* Two columns, accounting for gap */
+      display: flex;
+      flex-direction: column;
+      font-size: 0.95em;
+      color: var(--secondary-color);
+      font-weight: 500;
+    }
+
+    input, select, textarea {
+      padding: 10px 12px; /* More padding for better feel */
+      margin-top: 8px; /* Space between label and input */
+      border: 1px solid var(--input-border);
+      border-radius: 8px; /* Slightly more rounded corners */
+      font-size: 1em;
+      color: var(--text-color);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      outline: none; /* Remove default focus outline */
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--input-focus-border);
+      box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25); /* Subtle blue glow on focus */
+    }
+
+    textarea {
+      min-height: 80px; /* Taller default height */
+      resize: vertical; /* Allow vertical resizing */
+    }
+
+    /* Style for input type="number" to remove spin buttons in some browsers */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type="number"] {
+        -moz-appearance: textfield; /* Firefox */
+    }
+
+
+    .image-upload-section {
+      display: flex;
+      justify-content: center; /* Center the image boxes */
+      flex-wrap: wrap;
+      gap: 30px; /* Larger gap between image boxes */
+      margin-top: 30px;
+      padding-top: 25px;
+      border-top: 1px dashed var(--border-color); /* Separator line */
+    }
+
+    .image-upload-box {
+      flex: 0 0 calc(33.333% - 20px); /* Fixed width for 3 columns on larger screens */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-width: 150px;
+    }
+
+    .image-upload-box > label { /* Target the label directly inside image-upload-box */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 1.05em;
+        font-weight: 600;
+        color: var(--secondary-color);
+    }
+
+    .image-upload-box input[type="file"] {
+      margin-top: 15px; /* More space below preview box */
+      padding: 5px;
+      width: 100%;
+      background-color:blue,
+      box-sizing: border-box; /* Include padding in width */
+    }
+    .image-upload-box input[type="file"]::file-selector-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 15px;
+            margin-right: 15px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            }
+
+    .image-preview-box {
+      width: 180px; /* Consistent width */
+      height: 120px; /* Consistent height */
+      border: 2px dashed var(--border-color); /* Dashed border for placeholder */
+      background-color: var(--background-color);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden; /* Hide overflow for images */
+      margin-top: 10px; /* Space from label */
+      box-shadow: inset 0 1px 4px rgba(0,0,0,0.08); /* Subtle inner shadow */
+      position: relative; /* For the "No Image" text */
+    }
+
+    /* Text for "No Image Selected" */
+    .image-preview-box::before {
+      content: "No Image Selected";
+      color: var(--placeholder-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      font-style: italic;
+      font-size: 0.9em;
+    }
+    
+    /* Hide the "No Image Selected" text if an image is loaded */
+    .image-preview-box.has-image::before {
+        content: none;
+    }
+
+    .preview-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain; /* Ensure image fits without cropping */
+      display: none; /* Hidden by default, shown by JS if image is set */
+    }
+
+    /* This ensures that if the img src is empty or invalid, it remains hidden */
+    .preview-img:not([src]):not(.has-image),
+    .preview-img[src=""]:not(.has-image) {
+        display: none !important;
+    }
+
+    .signature {
+      margin-top: 50px;
+      font-weight: 600;
+      text-align: right; /* Align signature to the right */
+      color: var(--secondary-color);
+      padding-right: 20px; /* Some padding from the edge */
+      font-size: 1.1em;
+      clear: both; /* Ensures it clears any preceding floats/flex items */
+    }
+
+    .signature span {
+      display: inline-block;
+      border-bottom: 2px solid var(--secondary-color);
+      padding: 0 50px 5px 50px; /* Space for actual signature */
+      margin-left: 15px;
+      min-width: 150px; /* Ensure the signature line is visible */
+    }
+
+    button[type="submit"] {
+      display: block; /* Make button full width of its parent flex item */
+      width: fit-content; /* Adjust to content width */
+      margin: 40px auto 20px auto; /* Center button horizontally with ample space */
+      padding: 12px 30px; /* Larger padding for a more substantial button */
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px; /* Rounded corners */
+      cursor: pointer;
+      font-size: 1.1em;
+      font-weight: 600;
+      transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); /* Soft shadow for button */
+    }
+
+    button[type="submit"]:hover {
+      background-color: #2980b9; /* Darker blue on hover */
+      transform: translateY(-2px); /* Slight lift effect */
+      box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4); /* Enhanced shadow on hover */
+    }
+
+    button[type="submit"]:active {
+      transform: translateY(0); /* Press down effect */
+      box-shadow: 0 2px 5px rgba(52, 152, 219, 0.2);
+    }
+
+    /* --- Responsive Design --- */
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+      h4, h2 {
+        font-size: 1.8em;
+      }
+      legend {
+        font-size: 1.1em;
+      }
+      .rows label {
+        flex: 1 1 100%; /* Fields stack vertically on small screens */
+      }
+      .image-upload-section {
+        flex-direction: column; /* Images stack vertically */
+        align-items: center;
+        gap: 20px;
+      }
+      .image-upload-box {
+        flex: 0 0 100%; /* Full width for single column */
+      }
+      .image-preview-box {
+        width: 200px; /* Slightly larger image box for mobile viewing */
+        height: 130px;
+      }
+      .signature {
+        text-align: center; /* Center signature on smaller screens */
+        padding-right: 0;
+      }
+      .signature span {
+        margin-left: 0;
+        min-width: unset; /* Remove min-width */
+        width: 80%; /* Take up more width */
+      }
+      button[type="submit"] {
+        width: 90%; /* Button takes more width on smaller screens */
+        padding: 10px 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+        margin: 15px;
+      }
+      h4, h2 {
+        font-size: 1.5em;
+      }
+      legend {
+        font-size: 0.95em;
+      }
+      input, select, textarea {
+        padding: 8px 10px;
+      }
+      .image-preview-box {
+        width: 180px;
+        height: 110px;
+      }
+    }
+    label a{font-size:0px;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h4>APPLICATION FORM</h4>
+
+    <form method="POST" enctype="multipart/form-data" action="/applicationform/{{links}}">
+      {% csrf_token %}
+      
+      <fieldset>
+        <legend>Personal Information</legend>
+        <div class="rows">
+          <label>First Name: {{ form.first_name }}</label>
+          <label>Last Name: {{ form.last_name }}</label>
+          <label>Gender: 
+          <select name="gender" class="form-control">
+          <option value="Male" {% if form.gender.value == "Male" %}selected{% endif %}>Male</option>
+          <option value="Female" {% if form.gender.value == "Female" %}selected{% endif %}>Female</option>
+          <option value="Other" {% if form.gender.value == "Other" %}selected{% endif %}>Other</option>
+        </select></label>
+          <label>Date of Birth: {{ form.dob }}</label>
+          <label>Mobile Number: {{ form.mobile }}</label> 
+          <label>Whatsapp Number: {{ form.whatsapp }}</label>
+          <label>Email Address: {{ form.email }} <span id='searcheamilContainer' style="font-size:10px"> </span></label>
+          
+          <label>Father's Name: {{ form.father_name }}</label>
+          <label>Father's Mobile Number: {{ form.father_mobile }}</label>
+          <label>Father's Aadhar Number: {{ form.father_aadhar }}</label>
+          <label>Mother's Name: {{ form.mother_name }}</label>
+          <label>Mother's Mobile Number: {{ form.mother_mobile }}</label>
+          <label>Mother's Aadhar Number: {{ form.mother_aadhar }}</label>
+        </div>
+
+        <div class="image-upload-section">
+          <div class="image-upload-box">
+  <label>
+    Student Photo:
+    <div class="image-preview-box {% if form.student_photo.value %}has-image{% endif %}">
+      <img id="studentImagePreview" class="preview-img" 
+           src="{% if form.student_photo.value %}{{ form.student_photo.value.url }}{% endif %}" 
+           style="{% if form.student_photo.value %}display: block;{% else %}display: none;{% endif %}" />
+    </div>
+    {{ form.student_photo }}
+  </label>
+</div>
+
+<div class="image-upload-box">
+  <label>
+    Father Photo:
+    <div class="image-preview-box {% if form.father_photo.value %}has-image{% endif %}">
+      <img id="fatherImagePreview" class="preview-img" 
+           src="{% if form.father_photo.value %}{{ form.father_photo.value.url }}{% endif %}" 
+           style="{% if form.father_photo.value %}display: block;{% else %}display: none;{% endif %}" />
+    </div>
+    {{ form.father_photo }}
+  </label>
+</div>
+
+<div class="image-upload-box">
+  <label>
+    Mother Photo:
+    <div class="image-preview-box {% if form.mother_photo.value %}has-image{% endif %}">
+      <img id="motherImagePreview" class="preview-img" 
+           src="{% if form.mother_photo.value %}{{ form.mother_photo.value.url }}{% endif %}" 
+           style="{% if form.mother_photo.value %}display: block;{% else %}display: none;{% endif %}" />
+    </div>
+    {{ form.mother_photo }}
+  </label>
+</div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Educational Background</legend>
+        <div class="rows">
+          <label>Qualification: <select name="qualification" id="qualification" class="form-control">
+          <option value="">Select Qualification</option>
+          <option value="B.Tech" {% if form.qualification.value == "B.Tech" %}selected{% endif %}>B.Tech</option>
+          <option value="M.Tech" {% if form.qualification.value == "M.Tech" %}selected{% endif %}>M.Tech</option>
+          <option value="B.Sc" {% if form.qualification.value == "B.Sc" %}selected{% endif %}>B.Sc</option>
+          <option value="M.Sc" {% if form.qualification.value == "M.Sc" %}selected{% endif %}>M.Sc</option>
+          <option value="Diploma" {% if form.qualification.value == "Diploma" %}selected{% endif %}>Diploma</option>
+          <option value="Other" {% if form.qualification.value == "Other" %}selected{% endif %}>Other</option>
+          </select></label>
+          <label>Branch: <select name="branch" id="branch" class="form-control">
+            <option value="">Select Branch</option>
+            <option value="EEE" {% if form.branch.value == "EEE" %}selected{% endif %}>EEE</option>
+            <option value="ECE" {% if form.branch.value == "ECE" %}selected{% endif %}>ECE</option>
+            <option value="CSE" {% if form.branch.value == "CSE" %}selected{% endif %}>CSE</option>
+            <option value="Mechanical" {% if form.branch.value == "Mechanical" %}selected{% endif %}>Mechanical</option>
+            <option value="Civil" {% if form.branch.value == "Civil" %}selected{% endif %}>Civil</option>
+            <option value="IT" {% if form.branch.value == "IT" %}selected{% endif %}>IT</option>
+            <option value="Power Systems" {% if form.branch.value == "Power Systems" %}selected{% endif %}>Power Systems</option>
+            <option value="VLSI" {% if form.branch.value == "VLSI" %}selected{% endif %}>VLSI</option>
+            <option value="Machine Design" {% if form.branch.value == "Machine Design" %}selected{% endif %}>Machine Design</option>
+            <option value="Computer Science" {% if form.branch.value == "Computer Science" %}selected{% endif %}>Computer Science</option>
+            <option value="Physics" {% if form.branch.value == "Physics" %}selected{% endif %}>Physics</option>
+            <option value="Mathematics" {% if form.branch.value == "Mathematics" %}selected{% endif %}>Mathematics</option>
+            <option value="Chemistry" {% if form.branch.value == "Chemistry" %}selected{% endif %}>Chemistry</option>
+            <option value="Computer Applications" {% if form.branch.value == "Computer Applications" %}selected{% endif %}>Computer Applications</option>
+            <option value="Other" {% if form.branch.value == "Other" %}selected{% endif %}>Other</option>
+            </select></label>
+          <label>College Name: {{ form.college_name }}</label>
+          <label>College City: {{ form.college_city }}</label>
+          <label>College State: {{ form.college_state }}</label>
+          <label>University: {{ form.university }}</label>
+          <label>Roll Number: {{ form.roll_no }}</label>
+          <label>Aggregate Percentage (Graduation): <input type="number" name="{{ form.aggregate.name }}" id="{{ form.aggregate.id_for_label }}" value="{{ form.aggregate.value|default_if_none:'' }}" min="0" max="100" step="0.01"></label>
+          <label>Year of Passing (Graduation): 
+            <select name="{{ form.yop.name }}" id="{{ form.yop.id_for_label }}" class="form-control">
+              <option value="">Select Year</option>
+              {% comment %} Hardcoding years: Current year is 2025. Last 10 years (2016-2025), Next 5 years (2026-2030) {% endcomment %}
+              {% for year in "2030,2029,2028,2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016"|split:"," %}
+                <option value="{{ year }}" {% if form.yop.value|stringformat:"s" == year %}selected{% endif %}>{{ year }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>12th Aggregate Percentage: <input type="number" name="{{ form.agg12.name }}" id="{{ form.agg12.id_for_label }}" value="{{ form.agg12.value|default_if_none:'' }}" min="0" max="100" step="0.01"></label>
+          <label>12th Year of Passing: 
+            <select name="{{ form.yop12.name }}" id="{{ form.yop12.id_for_label }}" class="form-control">
+              <option value="">Select Year</option>
+              {% comment %} Hardcoding years: Current year is 2025. Last 10 years (2016-2025), Next 5 years (2026-2030) {% endcomment %}
+              {% for year in "2030,2029,2028,2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016"|split:"," %}
+                <option value="{{ year }}" {% if form.yop12.value|stringformat:"s" == year %}selected{% endif %}>{{ year }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>10th Aggregate Percentage: <input type="number" name="{{ form.agg10.name }}" id="{{ form.agg10.id_for_label }}" value="{{ form.agg10.value|default_if_none:'' }}" min="0" max="100" step="0.01"></label>
+          <label>10th Year of Passing: 
+            <select name="{{ form.yop10.name }}" id="{{ form.yop10.id_for_label }}" class="form-control">
+              <option value="">Select Year</option>
+              {% comment %} Hardcoding years: Current year is 2025. Last 10 years (2016-2025), Next 5 years (2026-2030) {% endcomment %}
+              {% for year in "2030,2029,2028,2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016"|split:"," %}
+                <option value="{{ year }}" {% if form.yop10.value|stringformat:"s" == year %}selected{% endif %}>{{ year }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Training Details: {{ form.training }}</label>
+          <label>Current Backlogs: {{ form.current_backlogs }}</label>
+          <label>History of Backlogs: {{ form.history_backlogs }}</label>
+          <label>Gap in Academics: {{ form.gap_academics }}</label>
+          <label>Address: {{ form.address }}</label>
+          <label>Referred By: {{ form.referred_by }}</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>FOR OFFICE USE ONLY</legend>
+        <div class="rows">
+          <label>Referred By (Office): {{ form.referred_by_office }}</label>
+          <label>Counsellor: {{ form.counsellor }}</label>
+          <label>
+            Model Name:
+            <select name="model_name" class="form-control">
+              <option value="">Select Model</option>
+              <option value="Ignite" {% if form.model_name.value == "Ignite" %}selected{% endif %}>Ignite</option>
+              <option value="Elite" {% if form.model_name.value == "Elite" %}selected{% endif %}>Elite</option>
+              <option value="Elite Premium" {% if form.model_name.value == "Elite Premium" %}selected{% endif %}>Elite Premium</option>
+            </select>
+          </label>
+          <label>CFS Code: {{ form.cfs_code }}</label>
+          <label>Remarks: {{ form.remarks }}</label>
+        </div>
+        <div class="signature">Signature Of Counsellor: <span></span></div>
+      </fieldset>
+
+      <button type="submit" >Submit Application</button>
+    </form>
+  </div>
+<script>
+
+
+document.addEventListener('DOMContentLoaded', function() {
+        const studentSearchInput = document.getElementById('id_email');
+        const searchResultsContainer = document.getElementById('searcheamilContainer');
+        if (studentSearchInput && searchResultsContainer) {
+            const fetchSuggestions = async (query) => {
+                // Only search if query is at least 2 characters to reduce unnecessary requests
+                if (query.length < 2) {
+                    setTimeout(() => { // Give time for animation before hiding completely
+                    }, 200); // Match transition duration
+                    return;
+                }
+
+                try {
+                    // Make an AJAX request to your Django endpoint for suggestions
+                    // IMPORTANT: Your URL for the API endpoint needs to be correctly specified.
+                    // If your Django URL pattern is 'api/search_suggestions/', then '/api/search_suggestions/' is correct.
+                    // If it's under 'applications' app, it might be '/applications/api/search_suggestions/'.
+                    // I'll use '/api/search_suggestions/' as a placeholder, but adjust as per your Django urls.py
+                    const response = await fetch(`/studentemailconform/{{links}}?q=${encodeURIComponent(query)}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json(); // Assuming your backend returns JSON
+                   
+                    if (query!=data[0].email ){
+                      searchResultsContainer.innerHTML='Use Login Email ';
+                      searchResultsContainer.style.color="red";
+                    }
+                    else{
+                        searchResultsContainer.innerHTML='Email Matched '
+                        searchResultsContainer.style.color="green";
+
+                    }
+
+                } catch (error) {
+                    
+                }
+            };
+            let debounceTimer;
+        studentSearchInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    fetchSuggestions(studentSearchInput.value);
+                }, 300); // Wait 300ms after last input before searching
+          });
+        }
+        
+});
+
+
+
+
+
+  
+</script>
+<script>
+  function previewImage(input, previewId) {
+    const file = input.files[0];
+    const preview = document.getElementById(previewId);
+    const parentBox = preview.closest('.image-preview-box');
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        if (parentBox) {
+            parentBox.classList.add('has-image'); /* Add class to indicate image presence */
+        }
+      };
+      reader.readAsDataURL(file);
+    } else {
+      preview.src = '';
+      preview.style.display = 'none';
+      if (parentBox) {
+            parentBox.classList.remove('has-image'); /* Remove class if no image */
+      }
+    }
+  }
+
+  document.querySelectorAll('input[type="file"]').forEach(input => {
+    input.addEventListener('change', function () {
+      const idMap = {
+        student_photo: 'studentImagePreview',
+        father_photo: 'fatherImagePreview',
+        mother_photo: 'motherImagePreview'
+      };
+      const previewId = idMap[this.name];
+      if (previewId) previewImage(this, previewId);
+    });
+  });
+
+  // Handle initial display for pre-filled images (if any)
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.image-preview-box img.preview-img').forEach(img => {
+        // Check if the image already has a source (e.g., from Django's pre-filled form)
+        // Ensure the src is not just the current page URL, which can happen for empty src attributes
+        if (img.src && img.src !== window.location.href) { 
+            img.style.display = 'block';
+            const parentBox = img.closest('.image-preview-box');
+            if (parentBox) {
+                parentBox.classList.add('has-image'); // Add class if image is already there
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>
+{% endblock %}

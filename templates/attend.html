@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+{% load custom_fil %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pivoted Attendance Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300,400,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-dark: #0056b3;
+            --secondary-bg: #f8f9fa;
+            --text-color: #343a40;
+            --light-border: #dee2e6;
+            --present-bg: #d4edda;
+            --present-text: #155724;
+            --absent-bg: #f8d7da;
+            --absent-text: #721c24;
+            --hover-bg: #e2e6ea;
+            --box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 30px;
+            background-color: var(--secondary-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 40px;
+            font-weight: 700;
+            font-size: 2.5em;
+            letter-spacing: 0.5px;
+        }
+
+        .table-container {
+            max-height: 80vh; /* Adjust as needed */
+            overflow-x: auto; /* Allows horizontal scrolling for many columns */
+            overflow-y: auto; /* Allows vertical scrolling for many rows */
+            border: 1px solid var(--light-border);
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            background-color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px; /* Ensures table doesn't get too squished on small screens */
+        }
+
+        th, td {
+            border: 1px solid var(--light-border);
+            padding: 12px 15px;
+            text-align: center;
+            white-space: nowrap; /* Prevents date columns from wrapping */
+        }
+
+        thead th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 20; /* Higher z-index for sticky header */
+            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.2); /* Subtle shadow for sticky effect */
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f6f6f6;
+        }
+
+        tbody tr:hover {
+            background-color: var(--hover-bg);
+        }
+
+        td.student-name {
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary-dark);
+            position: sticky; /* Sticky student name column */
+            left: 0;
+            background-color: inherit; /* Inherit background to blend with row striping */
+            z-index: 15; /* Ensures it stays above other cells but below header */
+        }
+
+        .Present {
+            background-color: var(--present-bg);
+            color: var(--present-text);
+            font-weight: 500;
+        }
+
+        .Absent {
+            background-color: var(--absent-bg);
+            color: var(--absent-text);
+            font-weight: 500;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 2em;
+                margin-bottom: 30px;
+            }
+            th, td {
+                padding: 10px 8px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Pivoted Attendance Report</h1>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="student-name">Student</th>
+                    {% for date in dates %}
+                        <th>{{ date }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for student, records in attendance_by_student.items %}
+                <tr>
+                    <td class="student-name">{{ student }}</td>
+                    {% for date in dates %}
+                        {% with status=records|get_item:date %}
+                            <td class="{{ status }}">{{ status|default:"N/A" }}</td>
+                        {% endwith %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

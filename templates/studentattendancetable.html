@@ -1,0 +1,363 @@
+{% extends 'studenthome.html' %}
+{% block content %}
+<!DOCTYPE html>
+{% load custom_fil %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pivoted Attendance Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300,400,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-dark: #0056b3;
+            --secondary-bg: #f8f9fa;
+            --text-color: #343a40;
+            --light-border: #dee2e6;
+            --present-bg: #d4edda;
+            --present-text: #155724;
+            --absent-bg: #f8d7da;
+            --absent-text: #721c24;
+            --hover-bg: #e2e6ea;
+            --box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: var(--secondary-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 40px;
+            font-weight: 700;
+            font-size: 2.5em;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-form {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .filter-form label {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .filter-form input[type="date"] {
+            padding: 10px 12px;
+            border: 1px solid var(--light-border);
+            border-radius: 5px;
+            font-size: 1em;
+            color: var(--text-color);
+            width: 180px; /* Fixed width for date inputs */
+            box-sizing: border-box; /* Include padding and border in the element's total width */
+        }
+
+        .filter-form button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+
+        .filter-form button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .table-container {
+            max-height: 80vh; /* Adjust as needed */
+            overflow-x: auto; /* Allows horizontal scrolling for many columns */
+            overflow-y: auto; /* Allows vertical scrolling for many rows */
+            border: 1px solid var(--light-border);
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            background-color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px; /* Ensures table doesn't get too squished on small screens */
+        }
+
+        th, td {
+            border: 1px solid var(--light-border);
+            padding: 12px 15px;
+            text-align: center;
+            white-space: nowrap; /* Prevents date columns from wrapping */
+        }
+
+        thead th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 20; /* Higher z-index for sticky header */
+            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.2); /* Subtle shadow for sticky effect */
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f6f6f6;
+        }
+
+        tbody tr:hover {
+            background-color: var(--hover-bg);
+        }
+
+        td.student-name {
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary-dark);
+            position: sticky; /* Sticky student name column */
+            left: 0;
+            background-color: inherit; /* Inherit background to blend with row striping */
+            z-index: 15; /* Ensures it stays above other cells but below header */
+        }
+        
+
+        .Present {
+            background-color: var(--present-bg);
+            color: var(--present-text);
+            font-weight: 500;
+        }
+
+        .Absent {
+            background-color: var(--absent-bg);
+            color: var(--absent-text);
+            font-weight: 500;
+        }
+
+        .summary-cell {
+            font-weight: 600;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 2em;
+                margin-bottom: 30px;
+            }
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-form input[type="date"] {
+                width: 100%;
+            }
+            th, td {
+                padding: 10px 8px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <form method="post" class="filter-form" > {% csrf_token %}
+
+        {# Render form fields directly to utilize your custom styling classes #}
+        <div>
+            {{ form.start_date.label_tag }}
+            <input type="date" id="{{ form.start_date.id_for_label }}" name="{{ form.start_date.name }}" value="{{ form.start_date.value|date:'Y-m-d'|default:start_date }}">
+        </div>
+        <div>
+            {{ form.end_date.label_tag }}
+            <input type="date" id="{{ form.end_date.id_for_label }}" name="{{ form.end_date.name }}" value="{{ form.end_date.value|date:'Y-m-d'|default:end_date }}">
+        </div>
+        <button type="submit">Filter</button>
+    </form>
+
+    <div class="table-container">
+        <table id="attendanceTable">
+            <thead>
+                <tr id="tableHeaderRow">
+                    <th class="student-name">Student</th>
+                    {% for date in attendance_by_student %}
+                        <th>{{ date.formatted_date }}</th>
+                    {% endfor %}
+                    <th>Total Days</th>
+                    <th>Attended Days</th>
+                    <th>Attendance %</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceTableBody">
+                {# Initial render with placeholder values #}
+                
+                <tr>
+                    <td class="student-name">{{applications.0.first_name }} {{applications.0.last_name }}</td>
+                    {% for dates in attendance_by_student %}
+                            
+                            <td class="{{ dates.status }}">{{ dates.status}}</td>
+                    {% endfor %}
+
+                    <td class="summary-cell total-days">0</td> {# Placeholder #}
+                    <td class="summary-cell attended-days">0</td> {# Placeholder #}
+                    <td class="summary-cell attendance-percentage">0.00%</td> {# Placeholder #}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function calculateAndDisplayAttendanceSummaries() {
+                const table = document.getElementById('attendanceTable');
+                if (!table) {
+                    return;
+                }
+
+                const headerRow = document.getElementById('tableHeaderRow');
+                const tbody = document.getElementById('attendanceTableBody');
+
+                if (!headerRow || !tbody) {
+                    return;
+                }
+
+                const headerCells = Array.from(headerRow.querySelectorAll('th'));
+                const numDateColumns = headerCells.length - 4; // Exclude 'Student' and 3 summary columns
+
+                const rows = tbody.querySelectorAll('tr');
+
+                rows.forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    if (cells.length === 0) return; // Skip empty rows
+
+                    let attendedDays = 0;
+                    let totalDays = 0;
+
+                    // Iterate through the date-specific attendance cells
+                    // Start from index 1 (after student name) up to numDateColumns (excluding summary cells)
+                    for (let i = 1; i <= numDateColumns; i++) {
+                        const status = cells[i] ? cells[i].textContent.trim() : '';
+                        if (status === 'Present') {
+                            attendedDays++;
+                            totalDays++;
+                        } else if (status === 'Absent') {
+                            totalDays++;
+                        }
+                        // 'N/A' or empty means no record for that day, so it doesn't count towards totalDays
+                    }
+
+                    const attendancePercentage = totalDays > 0
+                        ? ((attendedDays / totalDays) * 100).toFixed(2) + '%'
+                        : '0.00%';
+
+                    // Update the cells in the current row
+                    const totalDaysCell = cells[cells.length - 3];
+                    const attendedDaysCell = cells[cells.length - 2];
+                    const attendancePercentageCell = cells[cells.length - 1];
+
+                    if (totalDaysCell) {
+                        totalDaysCell.textContent = totalDays;
+                    }
+                    if (attendedDaysCell) {
+                        attendedDaysCell.textContent = attendedDays;
+                    }
+                    if (attendancePercentageCell) {
+                        attendancePercentageCell.textContent = attendancePercentage;
+                    }
+                });
+            }
+
+            // Call the calculation function once the DOM is loaded
+            calculateAndDisplayAttendanceSummaries();
+
+
+            // Optional: You can still extract the data into a JS object if needed elsewhere
+            function extractAttendanceDataFromTable() {
+                const extractedData = [];
+                const table = document.getElementById('attendanceTable');
+                if (!table) return extractedData;
+
+                const headerRow = document.getElementById('tableHeaderRow');
+                const tbody = document.getElementById('attendanceTableBody');
+                if (!headerRow || !tbody) return extractedData;
+
+                const headerCells = Array.from(headerRow.querySelectorAll('th'));
+                const dateColumns = [];
+                // Exclude 'Student' and the 3 summary columns
+                for (let i = 1; i < headerCells.length - 3; i++) {
+                    dateColumns.push(headerCells[i].textContent.trim());
+                }
+
+                const rows = tbody.querySelectorAll('tr');
+
+                rows.forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    if (cells.length === 0) return;
+
+                    const studentName = cells[0].textContent.trim();
+                    const studentRecords = {
+                        student: studentName,
+                        attendanceDates: {},
+                        summary: {
+                            totalDays: 0,
+                            attendedDays: 0,
+                            attendancePercentage: "0.00%"
+                        }
+                    };
+
+                    dateColumns.forEach((date, index) => {
+                        const status = cells[index + 1] ? cells[index + 1].textContent.trim() : 'N/A';
+                        studentRecords.attendanceDates[date] = status;
+                    });
+
+                    // Extract the calculated summary data from the table cells
+                    const totalDaysCell = cells[cells.length - 3];
+                    const attendedDaysCell = cells[cells.length - 2];
+                    const attendancePercentageCell = cells[cells.length - 1];
+
+                    if (totalDaysCell) {
+                        studentRecords.summary.totalDays = parseInt(totalDaysCell.textContent) || 0;
+                    }
+                    if (attendedDaysCell) {
+                        studentRecords.summary.attendedDays = parseInt(attendedDaysCell.textContent) || 0;
+                    }
+                    if (attendancePercentageCell) {
+                        studentRecords.summary.attendancePercentage = attendancePercentageCell.textContent;
+                    }
+
+                    extractedData.push(studentRecords);
+                });
+
+                return extractedData;
+            }
+
+            // --- Example Usage and Debugging ---
+            // You can uncomment this if you still need the JSON output
+            // const extractedAttendanceData = extractAttendanceDataFromTable();
+
+            // const preTag = document.createElement('pre');
+            // preTag.textContent = JSON.stringify(extractedAttendanceData, null, 2);
+            // document.body.appendChild(preTag);
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

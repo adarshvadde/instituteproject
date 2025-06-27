@@ -1,0 +1,97 @@
+{% extends 'adminpage.html' %}
+{% load custom_fil %} {# Assuming custom_fil is your app's templatetags module #}
+{% block content %}
+<div id="attendance" class="page.active">
+    <form method="post" action="/adminpagetakeingattendance/{{adminlinks}}">
+        {% csrf_token %}
+        <div class="page-header">
+            <h1>Take Attendance for ({{form.date.value}})</h1>
+            <div class="filter-controls">
+                <label for="id_date" style="margin-bottom: 0;">Date:</label>
+                {{ form.date }}
+                <label for="attendance-batch-filter" style="margin-bottom: 0;">Filter by Batch:</label>
+                <select id="attendance-batch-filter">
+                    <option value="all">All Batches</option>
+                    <option value="Ignite">Ignite</option>
+                    <option value="Elite">Elite</option>
+                    <option value="Elite Premium">Elite Premium</option>
+                </select>
+            </div>
+        </div>
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Batch</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTakingBody">
+                    {% for student_application in all_students %}
+                        {# Use model_name for data-batch as per your view #}
+                        <tr class="attendance-row" data-batch="{{ student_application.model_name }}">
+                            <td>
+                                
+                                <label for="id_student_{{ student_application.unique_id.unique_id }}">
+                                    {{ student_application.studentid }}
+                                </label>
+                            </td>
+                            <td>
+                                <label for="id_student_{{ student_application.unique_id.unique_id }}">
+                                    {{ student_application.first_name }} {{ student_application.last_name }}
+                                </label>
+                            </td>
+                            <td>
+                                {# Display model_name directly #}
+                                {{ student_application.model_name }}
+                            </td>
+                            <td>
+                                {# This is the critical part: pass the StudentUser's unique_id to the filter #}
+                                {{ form|get_item_id:student_application.unique_id.unique_id }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn" id="saveAttendanceBtn"><i class="fas fa-save"></i> Save Attendance</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const batchFilter = document.getElementById('attendance-batch-filter');
+        const attendanceRows = document.querySelectorAll('#attendanceTakingBody .attendance-row');
+        const dateInput = document.getElementById('id_date');
+
+        function filterRows() {
+            const selectedBatch = batchFilter.value;
+            attendanceRows.forEach(row => {
+                const rowBatch = row.dataset.batch;
+                if (selectedBatch === 'all' || rowBatch === selectedBatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        if (batchFilter) {
+            batchFilter.addEventListener('change', filterRows);
+        }
+
+        if (dateInput) {
+            dateInput.addEventListener('change', function() {
+                this.form.submit();
+            });
+        }
+
+        filterRows();
+    });
+</script>
+
+{% endblock %}

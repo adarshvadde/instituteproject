@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-bg: #4A90E2; /* Dark Blue */
+            --secondary-bg: #34495e; /* Lighter Blue */
+            --light-bg: #f8f9fa;
+            --white-bg: #ffffff;
+            --primary-text: #ecf0f1;
+            --dark-text: #212529;
+            --primary-accent: #3498db; /* Bright Blue */
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --border-radius:5px;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        img {
+            max-width: 60px;
+            max-height: 60px;
+            border-radius: 4px;
+        }
+
+        /* --- Sidebar / Menu --- */
+        .sidebar {
+            width: 250px;
+            background-color: var(--primary-bg);
+            color: var(--primary-text);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--secondary-bg);
+        }
+        /* --- NEW: Search Bar Styles --- */
+        .sidebar-search {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--secondary-bg);
+            /* Important: Set position relative for the absolute positioning of suggestions to work */
+            position: relative; 
+        }
+        .search-input-group {
+            position: relative;
+        }
+        .search-input-group input {
+            width: 80%;
+            padding: 10px 10px 10px 35px; /* Add padding for icon */
+            border: 1px solid var(--secondary-bg);
+            border-radius: var(--border-radius);
+            background-color: #55a0ed; /* Lighter blue for input */
+            color: var(--primary-text);
+            font-size: 0.95rem;
+        }
+        .search-input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .search-input-group input:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+        }
+        .search-input-group .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        /* --- END NEW: Search Bar Styles --- */
+
+        /* --- UPDATED: Search Suggestion Box Styles --- */
+        .search-suggestions-container {
+            position: absolute; 
+            top: calc(15px + 10px + 10px + 10px + 10px + 5px); /* Adjusted for better placement below input */
+            left: 20px;
+            right: 20px;
+            background-color: var(--white-bg);
+            border: 1px solid #cce7f2; /* Softer border */
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            
+            /* Animation properties */
+            display: none; /* Hidden by default via JS */
+            transform-origin: top;
+            transform: scaleY(0.95); /* Slightly scaled down initially */
+            opacity: 0; /* Fully transparent initially */
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out; /* Smooth transition */
+        }
+
+        .search-suggestions-container.show { /* Class added by JS to show with animation */
+            display: block; /* Ensure it's block to animate */
+            transform: scaleY(1); /* Scale up to full size */
+            opacity: 1; /* Fade in */
+        }
+
+        .search-suggestions-container ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .search-suggestions-container li {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            color: var(--dark-text);
+            font-size: 0.9rem;
+            display: flex; /* Use flexbox for alignment */
+            justify-content: space-between; /* Puts name on left, ID on right */
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .search-suggestions-container li:last-child {
+            border-bottom: none;
+        }
+
+        .search-suggestions-container li:hover {
+            background-color: #f0f0f0;
+        }
+
+        .search-suggestions-container li span.name {
+            font-weight: 500;
+        }
+        .search-suggestions-container li span.id {
+            font-size: 0.8em;
+            color: #777;
+            margin-left: 10px;
+        }
+        /* --- END UPDATED: Search Suggestion Box Styles --- */
+
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 20px 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--primary-text);
+            padding: 15px 20px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s, border-left 0.3s;
+            border-left: 4px solid transparent; 
+        }
+        .sidebar-menu li a:hover {
+            background-color: var(--secondary-bg);
+        }
+        .sidebar-menu li a.active {
+            background-color: var(--secondary-bg);
+            border-left-color: var(--primary-accent);
+        }
+        .sidebar-menu li a .icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .page {
+            display: none; /* Hidden by default */
+        }
+        .page.active {
+            display: block; /* Shown when active */
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+        .page-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--dark-text);
+        }
+        .btn {
+            background-color: var(--primary-accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s;
+            text-decoration: none; /* For button-like links */
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+
+        /* --- Tables & Cards --- */
+        .card {
+            background-color: var(--white-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px; /* Space between cards */
+        }
+        .card-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark-text);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .card-header input[type="date"] {
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            font-size: 0.9rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            text-align: left;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: 700;
+            color: var(--dark-text);
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 15px;
+            color: white;
+            font-size: 0.85em;
+            font-weight: 500;
+            text-align: center;
+            display: inline-block; /* Ensure badges behave like block elements for width/padding */
+            min-width: 80px; /* Give some consistent width */
+        }
+        .status-approved, .status-present { background-color: var(--success); }
+        .status-pending { background-color: var(--warning); }
+        .status-rejected, .status-absent, .status-n-a { background-color: var(--danger); } 
+        .action-icons i {
+            margin: 0 8px;
+            cursor: pointer;
+            color: #7f8c8d;
+            transition: color 0.3s;
+        }
+        .action-icons i:hover {
+            color: var(--primary-accent);
+        }
+
+        /* --- Form Elements --- */
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-text);
+        }
+        .form-group input, .form-group textarea, .form-group select { /* Added select for consistency */
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+        }
+        textarea {
+            min-height: 120px; /* Reduced for a more compact form */
+            resize: vertical;
+        }
+
+        /* Attendance specific styles */
+        #attendance .page-header input[type="date"],
+        #daily-summary .page-header input[type="date"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        #attendance td label { /* Applies to attendance-taking page */
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: normal;
+        }
+        #attendance .page-header .filter-controls,
+        #daily-summary .page-header .filter-controls { /* Applies to both */
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        #attendance .page-header .filter-controls select,
+        #daily-summary .page-header .filter-controls select { /* Applies to both */
+            padding: 10px 12px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            font-size: 1rem;
+            min-width: 150px;
+        }
+        
+        #students .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+
+        #students .filter-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #students .filter-controls select {
+            padding: 10px 12px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            font-size: 1rem;
+            min-width: 150px;
+        }
+
+        /* Student Profile Specific Styles */
+        .profile-detail {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: var(--dark-text);
+        }
+        .profile-detail .icon {
+            color: var(--primary-accent);
+            width: 25px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .profile-detail strong {
+            margin-right: 5px;
+        }
+
+        /* Daily Summary Table Specific Styles (now for grouped summary) */
+        #daily-summary .page-header {
+            justify-content: flex-start; /* Align header content to the left */
+            gap: 20px; /* Space out title and date filter */
+        }
+
+        /* New styles for application view page */
+        .app-detail {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: var(--dark-text);
+        }
+        .app-detail .icon {
+            color: var(--primary-accent);
+            width: 25px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .app-detail strong {
+            margin-right: 5px;
+        }
+    
+        .app-remarks {
+            background-color: #f2f2f2;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+        .app-remarks h3 {
+            margin-top: 0;
+            color: var(--dark-text);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+
+        /* For smaller screens, stack header elements */
+        @media (max-width: 768px) {
+            #students .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            #students .filter-controls {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            #students .filter-controls select,
+            #students .page-header .btn {
+                width: auto; 
+                flex-grow: 1; 
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+        .search-suggestions-container{width:100%}
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">Admin Panel</div>
+        
+        <div class="sidebar-search">
+            <div class="search-input-group">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="studentSearchInput" name="q" placeholder="Search students..." autocomplete="off">
+                
+                <div id="searchResultsContainer" class="search-suggestions-container">
+                    {# Search results will be dynamically inserted here by JavaScript #}
+                </div>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/adminpagestudentlist/{{adminlinks}}" class="menu-link" data-page="students"><i class="icon fas fa-user-graduate"></i> Students List</a></li>
+            <li><a href="/adminstudentdailyatendance/{{adminlinks}}" class="menu-link" data-page="daily-summary"><i class="icon fas fa-chart-pie"></i> Daily Attendance Summary</a></li>
+            <li><a href="/adminapplicationformslist/{{adminlinks}}" class="menu-link" data-page="applications"><i class="icon fas fa-file-alt"></i> Application Forms</a></li>
+            <li><a href="/adminpagetakeingattendance/{{adminlinks}}" class="menu-link" data-page="attendance"><i class="icon fas fa-calendar-check"></i> Take Attendance</a></li>
+            <li><a href="/adminemailsender/{{adminlinks}}" class="menu-link" data-page="email"><i class="icon fas fa-paper-plane"></i> Send Email</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        {# This block should be where your main page content (like student lists, forms) is loaded #}
+        {% block content %}
+        {# Include your default view template here, e.g., adminpagestudentlistd.html #}
+        {% include 'adminpagestudentlistd.html' %} 
+        {% endblock %}
+
+        {# All the div elements below should typically be separate templates rendered by Django views #}
+        {# This structure might be for a single-page application (SPA) like behavior managed by JS #}
+        {# If you're using separate Django views for each page, these divs would be in their respective templates #}
+
+        
+    </main>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const studentSearchInput = document.getElementById('studentSearchInput');
+        const searchResultsContainer = document.getElementById('searchResultsContainer');
+
+        if (studentSearchInput && searchResultsContainer) {
+            const fetchSuggestions = async (query) => {
+                // Only search if query is at least 2 characters to reduce unnecessary requests
+                if (query.length < 2) {
+                    searchResultsContainer.classList.remove('show'); // Trigger hide animation
+                    setTimeout(() => { // Give time for animation before hiding completely
+                        searchResultsContainer.style.display = 'none';
+                    }, 200); // Match transition duration
+                    return;
+                }
+
+                try {
+                    // Make an AJAX request to your Django endpoint for suggestions
+                    // IMPORTANT: Your URL for the API endpoint needs to be correctly specified.
+                    // If your Django URL pattern is 'api/search_suggestions/', then '/api/search_suggestions/' is correct.
+                    // If it's under 'applications' app, it might be '/applications/api/search_suggestions/'.
+                    // I'll use '/api/search_suggestions/' as a placeholder, but adjust as per your Django urls.py
+                    const response = await fetch(`/api/search_suggestions/?q=${encodeURIComponent(query)}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json(); // Assuming your backend returns JSON
+
+                    displaySuggestions(data);
+                } catch (error) {
+                    searchResultsContainer.classList.remove('show'); // Ensure hiding on error too
+                    setTimeout(() => {
+                        searchResultsContainer.style.display = 'none';
+                    }, 200);
+                }
+            };
+
+            const displaySuggestions = (suggestions) => {
+                searchResultsContainer.innerHTML = ''; // Clear previous results
+                if (suggestions.length > 0) {
+                    const ul = document.createElement('ul');
+                    suggestions.forEach(student => {
+                        const li = document.createElement('li');
+                        // Display name and ID, making sure both are present
+                        const studentName = student.name || 'Unknown Name';
+                        const studentId = student.id || 'N/A';
+                        li.innerHTML = `<span class="name">${studentName}</span> <span class="id">(${studentId})</span>`; // Structured content
+                        li.setAttribute('data-studentid', student.id); // Store student ID for selection
+
+                        li.addEventListener('click', () => {
+                            studentSearchInput.value = studentName; // Set input value to student name
+                            searchResultsContainer.classList.remove('show'); // Trigger hide animation
+                            setTimeout(() => {
+                                searchResultsContainer.style.display = 'none';
+                            }, 200); // Match transition duration
+
+                            // Redirect to the student's detail page using the student ID
+                            // IMPORTANT: Ensure this URL matches your Django URL pattern for student details
+                            // It will likely need the 'adminlinks' context variable passed from Django
+                            // Example: window.location.href = `/details/{{ adminlinks }}/${student.id}/`;
+                            // Since adminlinks is a Django context var, you might need to pass it to JS if this is a static HTML file
+                            // For now, assuming you handle adminlinks on the Django side or via JS variable
+                            // For demonstration, let's just log. Uncomment the line below for actual redirect.
+                            window.location.href = `/details/{{adminlinks}}/${student.id}/`; 
+                        });
+                        ul.appendChild(li);
+                    });
+                    searchResultsContainer.appendChild(ul);
+                    searchResultsContainer.style.display = 'block'; // Make visible (before adding 'show' for animation)
+                    setTimeout(() => {
+                        searchResultsContainer.classList.add('show'); // Trigger show animation
+                    }, 10); // Small delay to allow 'display: block' to register
+                } else {
+                    searchResultsContainer.classList.remove('show'); // Trigger hide animation
+                    setTimeout(() => {
+                        searchResultsContainer.style.display = 'none'; // Hide if no suggestions
+                    }, 200); // Match transition duration
+                }
+            };
+
+            // Event listener for input changes with debouncing
+            let debounceTimer;
+            studentSearchInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    fetchSuggestions(studentSearchInput.value);
+                }, 300); // Wait 300ms after last input before searching
+            });
+
+            // Hide suggestions when clicking outside the search area
+            document.addEventListener('click', (event) => {
+                if (!studentSearchInput.contains(event.target) && !searchResultsContainer.contains(event.target)) {
+                    searchResultsContainer.classList.remove('show');
+                    setTimeout(() => {
+                        searchResultsContainer.style.display = 'none';
+                    }, 200);
+                }
+            });
+
+            // Prevent the default form submission behavior if the input is wrapped in a form
+            const searchForm = studentSearchInput.closest('form');
+            if (searchForm) {
+                searchForm.addEventListener('submit', (event) => {
+                    event.preventDefault(); // Stop the default form submission
+                });
+            }
+        }
+    });
+</script>
+    
+</body>
+</html>

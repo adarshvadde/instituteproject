@@ -1,0 +1,299 @@
+{% extends 'adminpage.html' %}
+{% load static %}
+{% block content%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Application Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* --- Root Variables for easy theme changes --- */
+        :root {
+            --primary-color: #3498db; /* A vibrant blue for accents */
+            --secondary-color: #2c3e50; /* Darker blue for headings/strong text */
+            --background-color: #f8f9fa; /* Light greyish white background */
+            --card-background: #ffffff; /* White background for main container and fieldsets */
+            --text-color: #495057; /* Standard text color */
+            --border-color: #dee2e6; /* Light border color */
+            --shadow-light: rgba(0, 0, 0, 0.08); /* Soft light shadow */
+            --shadow-medium: rgba(0, 0, 0, 0.15); /* Slightly stronger shadow */
+            --placeholder-color: #adb5bd; /* For placeholders */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif; /* Modern font for a clean look */
+            background-color: var(--background-color);
+            margin: 0;
+            color: var(--text-color);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased; /* Smoother text rendering for better aesthetics */
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            margin: -20px auto; /* Centered with top/bottom margin */
+            background: var(--card-background);
+            border-radius: 12px; /* Nicely rounded corners */
+            padding: 10px 20px; /* Generous internal spacing */
+            overflow: hidden; /* Ensures any internal elements don't spill out */
+        }
+
+        h4 {
+            text-align: center;
+            color: var(--secondary-color);
+            font-size: 1em; /* Larger heading for emphasis */
+            font-weight: 700; /* Extra bold */
+            margin-bottom: 0px;
+            position: relative;
+        }
+
+        /* Underline effect for the main heading */
+        h4::after {
+            content: '';
+            display: block;
+            width: 90px; /* Wider and more noticeable underline */
+            height: 4px;
+            background: var(--primary-color);
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+
+        fieldset {
+            border: 1px solid var(--border-color); /* Subtle border */
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 10px; /* Softly rounded corners */
+            transition: all 0.3s ease-in-out; /* Smooth transition for hover effects */
+        }
+
+        
+
+        legend {
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0 15px; /* Padding around legend text */
+            font-size: 1.25em; /* Larger legend text */
+            background-color: var(--card-background); /* Ensures legend background matches fieldset */
+            border-radius: 5px;
+            margin-left: 10px; /* Slight indent */
+            position: relative;
+        }
+
+        .rows {
+            display: flex;
+            flex-wrap: wrap; /* Allows items to wrap to next line */
+        }
+
+        .field-block {
+            flex: 1 1 calc(50% - 15px); /* Two columns, accounting for gap */
+            display: flex; /* Use flexbox for label and span alignment */
+            align-items: baseline; /* Aligns text baselines */
+            font-size: 0.80em;
+            padding: 2px 0;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.08); /* Subtle dashed line separator */
+        }
+
+        .field-block label {
+            font-weight: 500;
+            color: var(--secondary-color);
+            display: inline-block;
+            margin-right: 12px;
+            min-width: 140px; /* Provides consistent alignment for labels */
+            flex-shrink: 0; /* Prevents labels from compressing */
+        }
+
+        .field-block span {
+            display: inline-block;
+            flex-grow: 1; /* Value takes up remaining space */
+            word-wrap: break-word; /* Ensures long content wraps */
+            overflow-wrap: break-word;
+            color: var(--text-color);
+        }
+
+        /* --- Image Display Section --- */
+        .image-upload-section {
+            display: flex;
+            justify-content: center; /* Centers the image boxes */
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-color); /* Separator line */
+        }
+
+        .image-upload-box {
+            flex: 0 0 calc(33.333% - 20px); /* Fixed width for 3 columns on larger screens */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .image-upload-box label {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+            font-size: 1.05em;
+        }
+
+        .image-preview-box {
+            width: 180px;
+            height: 120px;
+            border: 2px solid var(--border-color);
+            background-color: var(--background-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.08); /* Subtle inner shadow */
+            position: relative;
+        }
+
+        /* Hide the actual <img> tag if its src is empty or not set, to avoid broken image icons */
+        .image-preview-box img[src=""],
+        .image-preview-box img:not([src]) {
+            display: none;
+        }
+
+        /* Display "No Image Available" text if the image is missing */
+        /* This works by checking if there's an image with content inside the box */
+        .image-preview-box::before {
+            content: "No Image Available";
+            color: var(--placeholder-color);
+            font-style: italic;
+            font-size: 0.85em;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: block; /* Show by default */
+        }
+
+        /* Hide the "No Image Available" text if an image is actually loaded */
+        /* This requires the :has() pseudo-class, which has good modern browser support. */
+        .image-preview-box:has(img[src]:not([src=""]))::before {
+            content: none;
+        }
+
+        /* Ensure the image is visible when loaded */
+        .image-preview-box img:not([src=""]) {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Ensures image scales properly */
+        }
+
+
+        .signature {
+            margin-top: 50px;
+            font-weight: 600;
+            text-align: right;
+            color: var(--secondary-color);
+            padding-right: 20px;
+            font-size: 1.1em;
+            clear: both; /* Ensures it clears any preceding floats/flex items */
+        }
+        .signature span {
+            display: inline-block;
+            border-bottom: 2px solid var(--secondary-color);
+            padding: 0 50px 5px 50px; /* Space for counsellor signature */
+            margin-left: 15px;
+            min-width: 150px; /* Ensure the signature line is visible */
+        }
+
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h4>APPLICATION DETAILS</h4>
+
+        {% for application in applications %} {# Ensure 'data' context variable from Django view is correct. If your view passes 'applications', change this to 'for data in applications'. #}
+        <fieldset>
+            <legend>Personal Information</legend>
+            <div class="rows">
+                <div class="field-block"><label>First Name:</label><span>{{ application.first_name }}</span></div>
+                <div class="field-block"><label>Last Name:</label><span>{{ application.last_name }}</span></div>
+                <div class="field-block"><label>Gender:</label><span>{{ application.gender }}</span></div>
+                <div class="field-block"><label>DOB:</label><span>{{ application.dob|date:"F d, Y" }}</span></div> {# Formatted date #}
+                <div class="field-block"><label>Mobile:</label><span>{{ application.mobile }}</span></div>
+                <div class="field-block"><label>Whatsapp:</label><span>{{ application.whatsapp|default:"N/A" }}</span></div> {# Added default #}
+                <div class="field-block"><label>Email:</label><span>{{ application.email }}</span></div>
+                <div class="field-block"><label>Father Name:</label><span>{{ application.father_name }}</span></div>
+                <div class="field-block"><label>Father Mobile:</label><span>{{ application.father_mobile }}</span></div>
+                <div class="field-block"><label>Father Aadhar:</label><span>{{ application.father_aadhar|default:"N/A" }}</span></div> {# Added default #}
+                <div class="field-block"><label>Mother Name:</label><span>{{ application.mother_name }}</span></div>
+                <div class="field-block"><label>Mother Mobile:</label><span>{{ application.mother_mobile|default:"N/A" }}</span></div> {# Added default #}
+                <div class="field-block"><label>Mother Aadhar:</label><span>{{ application.mother_aadhar|default:"N/A" }}</span></div> {# Added default #}
+            </div>
+
+            <div class="image-upload-section">
+                <div class="image-upload-box">
+                    <label>Student Photo</label>
+                    <div class="image-preview-box">
+                        <img src="{{ application.student_photo.url }}" class="preview-img" alt="Student Photo" />
+                    </div>
+                </div>
+                <div class="image-upload-box">
+                    <label>Father Photo</label>
+                    <div class="image-preview-box">
+                        <img src="{{ application.father_photo.url }}" class="preview-img" alt="Father Photo" />
+                    </div>
+                </div>
+                <div class="image-upload-box">
+                    <label>Mother Photo</label>
+                    <div class="image-preview-box">
+                        <img src="{{ application.mother_photo.url }}" class="preview-img" alt="Mother Photo" />
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Educational Background</legend>
+            <div class="rows">
+                <div class="field-block"><label>Qualification:</label><span>{{ application.qualification }}</span></div>
+                <div class="field-block"><label>Branch:</label><span>{{ application.branch }}</span></div>
+                <div class="field-block"><label>College Name:</label><span>{{ application.college_name }}</span></div>
+                <div class="field-block"><label>College City:</label><span>{{ application.college_city }}</span></div>
+                <div class="field-block"><label>College State:</label><span>{{ application.college_state|default:"N/A" }}</span></div>
+                <div class="field-block"><label>University:</label><span>{{ application.university|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Roll No:</label><span>{{ application.roll_no|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Aggregate:</label><span>{{ application.aggregate|default:"N/A" }}</span></div>
+                <div class="field-block"><label>YOP:</label><span>{{ application.yop|default:"N/A" }}</span></div>
+                <div class="field-block"><label>12th Aggregate:</label><span>{{ application.agg12|default:"N/A" }}</span></div>
+                <div class="field-block"><label>12th YOP:</label><span>{{ application.yop12|default:"N/A" }}</span></div>
+                <div class="field-block"><label>10th Aggregate:</label><span>{{ application.agg10|default:"N/A" }}</span></div>
+                <div class="field-block"><label>10th YOP:</label><span>{{ application.yop10|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Training:</label><span>{{ application.training|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Current Backlogs:</label><span>{{ application.current_backlogs|default:"N/A" }}</span></div>
+                <div class="field-block"><label>History of Backlogs:</label><span>{{ application.history_backlogs|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Gap in Academics:</label><span>{{ application.gap_academics|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Address:</label><span>{{ application.address|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Referred By:</label><span>{{ application.referred_by|default:"N/A" }}</span></div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>FOR OFFICE USE ONLY</legend>
+            <div class="rows">
+                <div class="field-block"><label>Referred By (Office):</label><span>{{ application.referred_by_office|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Counsellor:</label><span>{{ application.counsellor|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Model Name:</label><span>{{ application.model_name|default:"N/A" }}</span></div> {# If 'model_name' is a CharField with choices, consider using data.get_model_name_display #}
+                <div class="field-block"><label>CFS Code:</label><span>{{ application.cfs_code|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Remarks:</label><span>{{ application.remarks|default:"N/A" }}</span></div>
+                <div class="field-block"><label>Student ID:</label><span>{{ application.studentid|default:"N/A" }}</span></div>
+            </div>
+            <div class="signature">Signature Of Counsellor: <span></span></div>
+        </fieldset>
+        {% empty %}
+        <p style="text-align: center; font-style: italic; color: var(--text-color);">No application details found.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
+{% endblock %}

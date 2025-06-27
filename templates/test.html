@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Work Report</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif; /* Modern font stack */
+            margin: 0;
+            padding: 0px; /* Standard padding around the form */
+            background-color: #f0f2f5; /* Softer, light background for contrast, matching image */
+            display: flex;
+            justify-content: center; /* Center content horizontally */
+            align-items: center; /* Center content vertically for the overall page */
+            min-height: 100vh;
+            box-sizing: border-box;
+            overflow: auto; /* Allow scrolling if content overflows */
+        }
+
+        .report-container {
+            background-color: #ffffff;
+            padding: 40px; /* Standard padding inside the container, matching image */
+            border-radius: 12px; /* Slightly more rounded corners */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12); /* Deeper, softer shadow, matching image */
+            max-width: 1000px; /* Reverted to portrait max-width based on image */
+            width: 100%;
+            box-sizing: border-box;
+            height: auto; /* Allow height to adjust to content */
+            min-height: initial; /* Ensure min-height does not enforce fixed size */
+            transform: none;
+            transform-origin: initial;
+            margin: 0; /* Reset margins */
+            position: static; /* Ensure it flows normally */
+            overflow: visible; /* Allow content to overflow if necessary */
+        }
+
+        .report-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 3px; /* More space below header */
+        }
+
+        .report-title {
+            font-size: 3.2em; /* Larger title */
+            font-weight: 900; /* Extra bold */
+            color: #2c3e50; /* Darker, professional blue-gray */
+            line-height: 1.1;
+            text-transform: uppercase;
+            letter-spacing: -1.5px; /* Tighter letter spacing for impact */
+            margin: 0 0 10px 0;
+            flex-basis: 100%;
+            text-align: Center;
+            position: relative;
+            padding-bottom: 5px; /* Space for subtle underline effect */
+            border-bottom: 3px solid #3498db; /* Blue underline */
+            display: inline-block; /* Make underline fit text width */
+        }
+
+        .report-title span {
+            display: inline; /* Keep "1st" on the same line if possible */
+            font-size: 0.4em; /* Smaller relative size for "1st" */
+            font-weight: 300;
+            color: #555;
+            text-transform: none;
+            vertical-align: super; /* Superscript "1st" */
+            margin-left: 5px; /* Space from "Work Report" */
+            letter-spacing: normal;
+        }
+        
+        /* Specific styling for "WORK REPORT" part of the title */
+        .report-title strong {
+            font-weight: 900;
+            color: #2c3e50;
+        }
+
+        .report-meta {
+            /* Adjusted to take full width and display items side-by-side */
+            flex-basis: 100%; /* Ensure it always takes full width */
+            display: flex;
+            flex-direction: row; /* Changed to row for side-by-side */
+            flex-wrap: wrap; /* Allow items to wrap to the next line */
+            justify-content: space-between; /* Distribute items with space between them */
+            gap: 5px; /* Slightly more space between meta fields */
+            margin-top: 5px; /* More space from title */
+        }
+
+        .meta-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            width: calc(50% - 10px); /* Adjust width for two columns with gap */
+            gap: 15px; /* More gap for input fields */
+        }
+        /* New rule to make the last meta-field take full width if there's an odd number */
+        .report-meta .meta-field:nth-last-child(1):nth-child(odd) {
+             width: 100%;
+        }
+
+
+        .meta-field label {
+            font-weight: 600;
+            color: #4a4a4a; /* Darker label color */
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-size: 0.80em; /* Slightly larger label font */
+        }
+
+        /* Specific styles for text inputs in meta-fields */
+        .meta-field input[type="text"] {
+            flex-grow: 1;
+            border: none;
+            border-bottom: 2px solid #e0e0e0; /* Thicker, lighter border */
+            padding: 6px 0; /* More vertical padding */
+            font-size: 1.05em; /* Slightly larger input font */
+            color: #333;
+            background-color: transparent;
+            outline: none;
+            transition: border-bottom-color 0.3s ease, box-shadow 0.3s ease; /* Added box-shadow to transition */
+        }
+
+        /* Specific styles for date inputs in meta-fields for better look */
+        .meta-field input[type="date"] {
+            flex-grow: 1;
+            border: 1px solid #ccc; /* Full border for a more defined look */
+            border-radius: 5px; /* Rounded corners */
+            padding: 6px 10px; /* Adjusted padding */
+            font-size: 1.05em; /* Consistent font size */
+            color: #333;
+            background-color: #fcfcfc; /* Light background for contrast */
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer; /* Indicate it's clickable */
+        }
+        /* Styles for Django error messages */
+        .errorlist {
+            color: #ef4444; /* red-500 */
+            font-size: 0.75rem; /* text-xs */
+            margin-top: 0.25rem; /* mt-1 */
+            list-style: none; /* list-none */
+            padding: 0;
+        }
+
+        /* Focus states for text and date inputs */
+        .meta-field input[type="text"]:focus {
+            border-bottom-color: #3498db; /* Accent blue on focus */
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2); /* Subtle shadow on focus */
+        }
+
+        .meta-field input[type="date"]:focus {
+            border-color: #3498db; /* Accent blue on focus */
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2); /* Subtle shadow on focus */
+        }
+
+        .activity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0px; /* More space above the table */
+            border-radius: 10px; /* Slightly more rounded table corners */
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Stronger table shadow */
+        }
+
+        .activity-table th, .activity-table td {
+            padding: 10px 10px; /* Decreased padding in cells */
+            border: 1px solid #ebf1f5; /* Very light border */
+            text-align: center;
+            font-size: 0.8em; /* Decreased font size */
+            color: #444;
+            vertical-align: top; /* Align content to the top */
+        }
+
+        .activity-table thead th {
+            background-color: #3498db; /* Strong blue header */
+            color: white;
+            font-weight: 700; /* Bolder header font */
+            text-transform: uppercase;
+            letter-spacing: 0.8px; /* More letter spacing for headers */
+            border-bottom: 3px solid #2980b9; /* Darker blue bottom border for header */
+        }
+
+        .activity-table tbody tr:nth-child(even) { /* Inverted zebra striping for cleaner look */
+            background-color: #fdfdfd; /* Lighter even row */
+        }
+        .activity-table tbody tr:nth-child(odd) {
+            background-color: #f8fbfd; /* Slightly darker odd row */
+        }
+
+        .activity-table tbody tr:hover {
+            background-color: #e6f7ff; /* Lighter blue on hover */
+            transition: background-color 0.3s ease;
+        }
+
+        .activity-table .day-label {
+            background-color: #cce7ff; /* Lighter blue for day labels */
+            font-weight: 700; /* Bolder day labels */
+            text-align: left;
+            border-right: 2px solid #a6d5fa; /* Blue border for day column */
+            width: 100px; /* Decreased fixed width for day column */
+            color: #1d3557; /* Darker text for day labels */
+        }
+
+        /* Styles for date inputs within the activity table */
+        .activity-table tbody input[type="date"] {
+            width: calc(100% - 10px); /* Adjust width to account for padding */
+            padding: 5px; /* Similar padding as textareas within table */
+            border: 1px solid #ddd; /* Full border */
+            border-radius: 5px; /* Rounded corners */
+            box-sizing: border-box;
+            font-family: 'Inter', Arial, sans-serif;
+            font-size: 0.8em; /* Match table font size */
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: #fcfcfc; /* Light background */
+            cursor: pointer;
+        }
+
+        .activity-table tbody input[type="date"]:focus {
+            border-color: #3498db;
+            box-shadow: 0 1px 5px rgba(52, 152, 219, 0.2);
+        }
+
+        .activity-table .total-hours-row td {
+            background-color: #dbe9f6; /* Lighter blue for total row */
+            font-weight: 800; /* Extra bold for total */
+            text-align: right;
+            padding-right: 20px; /* Slightly less padding */
+            border-top: 2px solid #a6d5fa; /* Blue border top */
+            color: #2c3e50; /* Darker text for total */
+        }
+
+        .activity-table .total-hours-row .total-label {
+            text-align: left;
+            background-color: transparent; /* Ensure no background clash */
+            border-right: none;
+            color: #2c3e50;
+            font-weight: 800;
+        }
+
+        .signatures {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around; /* Use space-around for even distribution */
+            margin-top: 5px; /* More space above signatures */
+            padding-top: 2px; /* More padding above dashed line */
+            border-top: 1px dashed #c0c0c0; /* Softer dashed line */
+        }
+
+        .signature-block {
+            flex-basis: calc(33% - 30px); /* Adjust spacing between blocks */
+            text-align: center;
+            margin-bottom: 25px; /* More vertical space */
+            min-width: 180px; /* Adjusted min-width for mobile stacking */
+        }
+
+        .signature-line {
+            display: block;
+            width: 90%; /* Wider line */
+            height: 2px; /* Thicker line */
+            background-color: #34495e; /* Darker line color */
+            margin: 35px auto 8px auto; /* More space above and below line */
+            border-radius: 1px; /* Slightly rounded line ends */
+        }
+
+        .signature-label {
+            font-size: 0.95em; /* Slightly larger label */
+            color: #666; /* Softer label color */
+            font-weight: 600;
+            text-transform: uppercase; /* Uppercase labels */
+            letter-spacing: 0.5px;
+        }
+
+        .activity-table textarea {
+            width: 100%;
+            min-height: 40px; /* Decreased minimum height for textarea */
+            padding: 5px; /* Decreased padding for textarea */
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-family: 'Inter', Arial, sans-serif;
+            font-size: 0.8em; /* Decreased font size for textarea */
+            resize: vertical; /* Allow vertical resizing by user */
+            transition: border-color 0.3s ease;
+        }
+
+        .activity-table textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        /* Responsive adjustments for portrait orientation */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            .report-container {
+                padding: 30px;
+                border-radius: 10px;
+                max-width: 95%; /* Adjust max-width for smaller screens */
+            }
+            .report-title {
+                font-size: 2.5em;
+                letter-spacing: -1px;
+            }
+            .report-title span {
+                font-size: 0.35em;
+            }
+            .report-meta {
+                flex-basis: 100%; /* Stack meta fields */
+                margin-top: 15px;
+                flex-direction: column; /* Stack meta-fields vertically on mobile */
+                gap: 5px;
+            }
+            .meta-field {
+                width: 100%; /* Full width on mobile */
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .meta-field input[type="text"],
+            .meta-field input[type="date"] {
+                font-size: 1em;
+                padding: 5px 0;
+            }
+            .activity-table th, .activity-table td {
+                padding: 8px 8px; /* Further decreased padding for mobile */
+                font-size: 0.75em; /* Further decreased font size for mobile */
+            }
+            .activity-table .day-label {
+                width: 70px; /* Adjusted width for mobile */
+                padding-left: 8px;
+            }
+            .activity-table thead th {
+                font-size: 0.7em; /* Adjusted header font size for mobile */
+            }
+            .activity-table .total-hours-row td {
+                padding-right: 10px; /* Adjusted padding for mobile */
+            }
+            .signatures {
+                flex-direction: column;
+                align-items: center;
+                margin-top: 40px;
+            }
+            .signature-block {
+                flex-basis: 100%;
+                max-width: 280px; /* Constrain width of stacked blocks */
+                margin-bottom: 20px;
+            }
+            .signature-line {
+                width: 70%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            .report-container {
+                padding: 20px;
+                max-width: 100%; /* Full width on very small screens */
+            }
+            .report-title {
+                font-size: 2em;
+                letter-spacing: -0.5px;
+            }
+            .report-title span {
+                font-size: 0.3em;
+            }
+            .activity-table th, .activity-table td {
+                padding: 6px 6px; /* Even smaller padding for smallest screens */
+                font-size: 0.7em; /* Even smaller font size for smallest screens */
+            }
+            .activity-table .day-label {
+                width: 60px; /* Adjusted width for smallest screens */
+                padding-left: 6px;
+            }
+            .signatures {
+                margin-top: 30px;
+                padding-top: 20px;
+            }
+            .signature-block {
+                margin-bottom: 15px;
+            }
+            .signature-line {
+                margin-top: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            {# Corrected syntax: removed extraneous </span> #}
+            <h1 class="report-title">Weekly Student Report</h1> 
+            <div class="report-meta">
+                {# unique_id field (often hidden or set in view) #}
+                {# This div will render the unique_id field if present in the form #}
+                <div class="meta-field">
+                    <label for="{{ report_form.unique_id.id_for_label }}">
+                        {{ report_form.unique_id.label }}:
+                    </label>
+                    {{ report_form.unique_id }}
+                    {% if report_form.unique_id.errors %}<ul class="errorlist">{{ report_form.unique_id.errors }}</ul>{% endif %}
+                    {% if report_form.unique_id.help_text %}<p class="helptext">{{ report_form.unique_id.help_text }}</p>{% endif %}
+                </div>
+
+                <div class="meta-field">
+                    <label for="{{ report_form.student_name.id_for_label }}">
+                        {{ report_form.student_name.label }}:
+                    </label>
+                    {{ report_form.student_name }}
+                    {% if report_form.student_name.errors %}<ul class="errorlist">{{ report_form.student_name.errors }}</ul>{% endif %}
+                    {% if report_form.student_name.help_text %}<p class="helptext">{{ report_form.student_name.help_text }}</p>{% endif %}
+                </div>
+
+                <div class="meta-field">
+                    <label for="{{ report_form.student_id.id_for_label }}">
+                        {{ report_form.student_id.label }}:
+                    </label>
+                    {{ report_form.student_id }}
+                    {% if report_form.student_id.errors %}<ul class="errorlist">{{ report_form.student_id.errors }}</ul>{% endif %}
+                    {% if report_form.student_id.help_text %}<p class="helptext">{{ report_form.student_id.help_text }}</p>{% endif %}
+                </div>
+                
+                <div class="meta-field">
+                    <label for="{{ report_form.report_date_from.id_for_label }}">
+                        {{ report_form.report_date_from.label }}:
+                    </label>
+                    {{ report_form.report_date_from }}
+                    {% if report_form.report_date_from.errors %}<ul class="errorlist">{{ report_form.report_date_from.errors }}</ul>{% endif %}
+                    {% if report_form.report_date_from.help_text %}<p class="helptext">{{ report_form.report_date_from.help_text }}</p>{% endif %}
+                </div>
+
+                <div class="meta-field">
+                    <label for="{{ report_form.report_date_to.id_for_label }}">
+                        {{ report_form.report_date_to.label }}:
+                    </label>
+                    {{ report_form.report_date_to }}
+                    {% if report_form.report_date_to.errors %}<ul class="errorlist">{{ report_form.report_date_to.errors }}</ul>{% endif %}
+                    {% if report_form.report_date_to.help_text %}<p class="helptext">{{ report_form.report_date_to.help_text }}</p>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %} {# Django requires this for security #}
+            {# Render any non-field errors for the main report form #}
+            {% if report_form.non_field_errors %}
+                <ul class="errorlist">{{ report_form.non_field_errors }}</ul>
+            {% endif %}
+
+            <table class="activity-table" id="activityTable">
+                <thead>
+                    <tr>
+                        {# "1st Week" spans the Day column #}
+                        <th rowspan="2"> <span>1<sup>st</sup> Week</span></th> 
+                        <th>Date</th>
+                        <th>Task Accomplished</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# Required for Django formsets #}
+                    {{ daily_entry_forms.management_form }}
+                    
+                    {% for form in daily_entry_forms %}
+                        <tr>
+                            {# This renders the day of the week, e.g., 'Monday' #}
+                            <td class="day-label">{{ form.day_of_week }}</td>
+                            <td>{{ form.entry_date }}</td>
+                            <td>{{ form.task_accomplished }}</td>
+                            {# Include hidden ID field for existing entries in a formset #}
+                            {% if form.instance.pk %}
+                                {{ form.id }}
+                            {% endif %}
+                        </tr>
+                        {% if form.errors %}
+                            <tr class="errorlist-row">
+                                <td colspan="3"> {# Span across all columns for error messages #}
+                                    <ul class="errorlist">
+                                        {% for field in form %}
+                                            {% if field.errors %}
+                                                <li>{{ field.label }}: {{ field.errors }}</li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if form.non_field_errors %}
+                                            <li>{{ form.non_field_errors }}</li>
+                                        {% endif %}
+                                    </ul>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="total-hours-row">
+                        <td colspan="2" class="total-label">Total Hours Work</td>
+                        <td>
+                            {{ report_form.total_hours_work }}
+                            {% if report_form.total_hours_work.errors %}<ul class="errorlist">{{ report_form.total_hours_work.errors }}</ul>{% endif %}
+                            {% if report_form.total_hours_work.help_text %}<p class="helptext">{{ report_form.total_hours_work.help_text }}</p>{% endif %}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="signatures">
+                <div class="signature-block">
+                    <span class="signature-line"></span>
+                    <span class="signature-label">Approved By</span>
+                </div>
+                <div class="signature-block">
+                    <span class="signature-line"></span>
+                    <span class="signature-label">Signed By</span>
+                </div>
+                <div class="signature-block">
+                    <span class="signature-line"></span>
+                    <span class="signature-label">Date</span>
+                </div>
+            </div>
+            
+            <div style="text-align: right; margin-top: 20px;">
+                <button type="submit" style="
+                    background-color: #3498db;
+                    color: white;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 1em;
+                    cursor: pointer;
+                    transition: background-color 0.3s ease;
+                ">Submit Report</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

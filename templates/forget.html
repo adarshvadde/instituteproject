@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forgot Password - OTP</title>
+  <script src=
+"https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
+    </script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 350px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .input-row input {
+      flex: 2;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .input-row button {
+      flex: 1;
+      padding: 10px;
+      background-color: #1d3557;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .input-row button:hover {
+      background-color: #14314f;
+    }
+
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #1d3557;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Forgot Password</h2>
+     {% csrf_token %}
+    <div class="input-row">
+      <input type="email" id="email" name="email" placeholder="Enter your email" required />
+      <button onclick="sendOTP()">Send OTP</button><br>
+    </div>
+    <span id="emailStatus"></span>
+
+
+    <div id="otpSection" class="hidden">
+      <div class="input-row">
+        <input type="text" id="otp" name="otp" placeholder="Enter OTP" required />
+        <button onclick="verifyOTP()">Verify OTP</button>
+      </div>
+      <span id="otpStatus"></span>
+    </div>
+
+    <div id="passwordSection" class="hidden">
+      <input type="password" id="newPassword" name="password" placeholder="New Password" required />
+      <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required oninput="matchPassword()" />
+      <span id="passwordStatus"></span>
+      <button onclick="resetPassword()">Reset Password</button>
+      <span id="resetStatus"></span>
+    </div>
+  </div>
+
+  <script>
+    let generatedOTP = "";
+
+    function sendOTP() {
+      const email = document.getElementById("email").value;
+      const emailStatus = document.getElementById('emailStatus');
+
+  if (!email) {
+    emailStatus.innerHTML = "<span style='color:red'>Please enter a valid email.</span>";
+    return;
+  }
+
+      var formData = new FormData();
+      formData.append("email", email);  
+      $.ajax({
+        type: "POST",
+        url: "/forget_send_otp/",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+          if (data.status === 'success') {
+            generatedOTP = data.otp; // Store the generated OTP
+            emailStatus.innerHTML = "<span style='color:green'>OTP sent to your email.</span>";
+            document.getElementById("otpSection").classList.remove("hidden");
+          } else {
+            emailStatus.innerHTML = "<span style='color:red'>Email not registered</span>";
+          }
+        }
+      })
+      
+   
+    }
+
+    function verifyOTP() {
+      const otpStatus = document.getElementById("otpStatus");
+
+      var formData = new FormData();
+        csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
+        formData.append("csrfmiddlewaretoken", csrf_token);
+        formData.append("otp", $('input[name="otp"]').val());
+
+      $.ajax({
+        type: "POST",
+        url: "/forget_verify_otp/",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+          
+        }
+        
+      })
+      .then(data => {
+    if (data.status === 'success') {
+      otpStatus.innerHTML = "<span style='color:green'>OTP verified successfully.</span>";
+      document.getElementById("passwordSection").classList.remove("hidden");
+    } else {
+      otpStatus.innerHTML = "<span style='color:red'>Invalid OTP. Try again.</span>";
+    }
+  }); 
+    }
+
+    function matchPassword() {
+      const password = document.getElementById("newPassword").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+  const statusdiv = document.getElementById("passwordStatus");
+
+  if (!password || !confirmPassword) {
+    statusdiv.textContent = "Please fill in all fields.";
+    statusdiv.style.color = "red";
+    return false;
+  }
+
+  if (password !== confirmPassword) {
+    statusdiv.textContent = "Passwords do not match!";
+    statusdiv.style.color = "red";
+    return false;
+  }
+  if(password==confirmPassword){
+    statusdiv.textContent = "Passwords match!";
+    statusdiv.style.color = "green";
+    return true;
+  }
+
+  statusdiv.textContent = "";
+  return true;
+}
+
+function resetPassword(){
+  var formdata=new FormData();
+  csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
+  formdata.append("csrfmiddlewaretoken", csrf_token);
+  formdata.append("email", $('input[name="email"]').val());
+  formdata.append("password", $('input[name="password"]').val());
+  $.ajax({
+    type: "POST",
+    url: "/forgetpassword/",
+    data: formdata,
+    processData: false,
+    contentType: false,
+    success: function (data) {
+      if (data.status === 'success') {
+        window.location.href = "/studentlogin/"; // Redirect to login page
+      } else {
+        var resetStatus = document.getElementById("resetStatus");
+        resetStatus.innerHTML = "<span style='color:red'>Failed to reset password. Please try again.</span>";
+      }
+    }
+  });
+}
+
+  </script>
+</body>
+</html>

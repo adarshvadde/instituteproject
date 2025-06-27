@@ -1,0 +1,916 @@
+{% extends 'adminpage.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Email to Students</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4A90E2; /* Dark Blue */
+            --secondary-bg: #34495e; /* Lighter Blue */
+            --light-bg: #f8f9fa;
+            --white-bg: #ffffff;
+            --primary-text: #ecf0f1;
+            --dark-text: #212529;
+            --primary-accent: #3498db; /* Bright Blue */
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Main Container */
+        .email-container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: #FFF;
+            border-radius: 8px; /* Corrected to a fixed value as var(--border-radius) was not defined in this block */
+            box-shadow: var(--shadow); /* Using defined shadow variable */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 80vh; /* Ensure it takes up enough vertical space */
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: #FFF;
+            padding: 20px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .user-id-display {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            display: flex;
+            flex: 1;
+            min-height: calc(80vh - 80px); /* Adjust based on header height */
+        }
+
+        /* Student List Panel (Left) */
+        .student-list-panel {
+            width: 35%;
+            border-right: 1px solid #ccc; /* Used fixed value as var(--border-color) was not defined */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .student-list-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee; /* Used fixed value as var(--border-color) was not defined */
+        }
+
+        .student-list-header h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 10px; /* Spacing for the upload section */
+        }
+
+        .search-box input {
+            width: 80%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #ccc; /* Used fixed value as var(--border-color) was not defined */
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .search-box .fa-search {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777; /* Used fixed value as var(--text-light-color) was not defined */
+        }
+
+        .data-upload-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 20px 20px; /* Adjust padding to fit */
+            border-bottom: 1px solid #eee; /* Used fixed value as var(--border-color) was not defined */
+            background-color: #f5f5f5; /* Used fixed value as var(--secondary-color) was not defined */
+        }
+
+        .data-upload-section label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--dark-text); /* Used defined var(--dark-text) */
+        }
+
+        /* Styling for the file input */
+        .data-upload-section #excelFile {
+            border: 1px solid var(--primary-color); /* Primary color border */
+            border-radius: 8px;
+            padding: 8px 12px;
+            background-color: #e0f2f7; /* Light blue background */
+            color: var(--dark-text); /* Used defined var(--dark-text) */
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .data-upload-section #excelFile:hover {
+            background-color: #d0eaf2; /* Slightly darker on hover */
+            border-color: #2980b9; /* A hover color for primary, adjusted */
+        }
+
+        .data-upload-section #excelFile::file-selector-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 15px;
+            margin-right: 15px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .data-upload-section #excelFile::file-selector-button:hover {
+            background-color: #2980b9; /* A hover color for primary, adjusted */
+        }
+
+
+        .data-upload-section #studentDataUploadArea {
+            min-height: 80px;
+            border: 1px dashed #ccc; /* Used fixed value as var(--border-color) was not defined */
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #fcfdff;
+            color: #777; /* Used fixed value as var(--text-light-color) was not defined */
+            font-family: 'Inter', monospace; /* Monospace for code-like input */
+            font-size: 0.9rem;
+            overflow-y: auto;
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            cursor: text;
+        }
+
+        .data-upload-section .btn {
+            width: fit-content;
+            align-self: flex-end; /* Align button to the right */
+            padding: 8px 18px; /* Smaller padding for this button */
+            font-size: 0.9rem;
+            background-color: var(--primary-color); /* Make it distinct */
+            color: white;
+            box-shadow: none; /* No shadow for this secondary button */
+        }
+
+        .data-upload-section .btn:hover {
+            background-color: #2980b9; /* A hover color for primary, adjusted */
+            transform: none; /* No lift effect */
+            box-shadow: none;
+        }
+
+
+        .select-all-container {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee; /* Used fixed value as var(--border-color) was not defined */
+            background-color: #f5f5f5; /* Used fixed value as var(--secondary-color) was not defined */
+        }
+
+        .select-all-container input {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 4px; /* Rounded checkbox */
+            border: 1px solid black;
+            appearance: none;
+            cursor: pointer;
+            position: relative;
+            outline: none;
+        }
+
+        .select-all-container input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .select-all-container input:checked::after {
+            content: '\2713'; /* Checkmark character */
+            color: white;
+            font-size: 12px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .student-list {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+            padding-bottom: 10px; /* Add some padding at the bottom */
+            padding-left: 0; /* Ensure no default padding from ul */
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee; /* Used fixed value as var(--border-color) was not defined */
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .student-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-item:hover {
+            background-color: #EFF6FF;
+        }
+
+        .student-item input[type="checkbox"] {
+            margin-right: 15px;
+            width: 16px;
+            height: 16px;
+            border-radius: 4px; /* Rounded checkbox */
+            border: 1px solid black;
+            cursor: pointer;
+            position: relative;
+            outline: none;
+        }
+
+        .student-item input[type="checkbox"]:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .student-item input[type="checkbox"]:checked::after {
+            content: '\2713'; /* Checkmark character */
+            color: white;
+            font-size: 12px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .student-info {
+            flex: 1; /* Allow info to take remaining space */
+        }
+
+        .student-info .name {
+            font-weight: 600;
+            display: block;
+        }
+
+        .student-info .email {
+            font-size: 0.9rem;
+            color: #777; /* Used fixed value as var(--text-light-color) was not defined */
+        }
+
+        /* Composer Panel (Right) */
+        .composer-panel {
+            width: 65%; /* Adjusted width */
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea,
+        .recipient-field {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccc; /* Used fixed value as var(--border-color) was not defined */
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .recipient-field {
+            min-height: 45px;
+            background-color: #f5f5f5; /* Used fixed value as var(--secondary-color) was not defined */
+            font-size: 0.9rem;
+            color: #777; /* Used fixed value as var(--text-light-color) was not defined */
+            word-wrap: break-word; /* Allow long emails to wrap */
+            padding: 12px 15px; /* Ensure padding consistency */
+        }
+
+        textarea#email-body {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        /* Composer Actions */
+        .composer-actions {
+            margin-top: auto;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-send {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .btn-send:hover {
+            background-color: #2980b9; /* Adjusted for hover */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn-send i {
+            margin-right: 8px;
+        }
+
+        .btn-draft {
+            background: none;
+            border: 1px solid #ccc; /* Used fixed value as var(--border-color) was not defined */
+            color: #777; /* Used fixed value as var(--text-light-color) was not defined */
+        }
+
+        .btn-draft:hover {
+            background-color: #f5f5f5; /* Used fixed value as var(--secondary-color) was not defined */
+            border-color: #B0B8C1;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+
+        /* Message Box / Modal */
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .message-box-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-box-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px; /* Corrected to a fixed value */
+            box-shadow: var(--shadow); /* Using defined shadow variable */
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .message-box-overlay.show .message-box-content {
+            transform: translateY(0);
+        }
+
+        .message-box-content h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .message-box-content p {
+            margin-bottom: 25px;
+            font-size: 1rem;
+            color: var(--dark-text); /* Used defined var(--dark-text) */
+        }
+
+        .message-box-content .btn-close {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .message-box-content .btn-close:hover {
+            background-color: #2980b9; /* Adjusted for hover */
+        }
+
+        .student-list {
+            max-height: 400px; /* Set a maximum height for the list */
+            overflow-y: auto; /* Add a vertical scrollbar when content exceeds max-height */
+            border: 1px solid #ccc; /* Optional: Add a border to make the scrollable area clear */
+            padding: 10px; /* Optional: Add some padding inside the list */
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .student-list-panel, .composer-panel {
+                width: 100%;
+                border-right: none;
+            }
+            .student-list-panel {
+                border-bottom: 1px solid #eee; /* Used fixed value as var(--border-color) was not defined */
+                max-height: 40vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+            .email-container {
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+            .composer-panel {
+                padding: 20px;
+            }
+            .user-id-display {
+                top: auto;
+                bottom: 10px;
+                left: 15px;
+                right: auto;
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="email-container">
+        <header>
+            <h1>Compose Email to Students</h1>
+            <div class="user-id-display">
+                Your ID: <span id="currentUserId">N/A (No Auth)</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <aside class="student-list-panel">
+                <div class="student-list-header">
+                    <h2>Select Recipients</h2>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="studentSearch" placeholder="Search students...">
+                    </div>
+                </div>
+
+                <div class="data-upload-section">
+                    <input type="file" id="excelFile" accept=".xls,.xlsx" />
+                </div>
+
+                <div class="select-all-container">
+                    <input type="checkbox" id="selectAll">
+                    <label for="selectAll">Select All</label>
+                </div>
+                <ul class="student-list" id="studentList">
+    {% for student in students %}
+    <li class="student-item">
+        <input type="checkbox" class="student-checkbox" data-email="{{ student.email }}" data-id="{{ student.id }}">
+        <div class="student-info">
+            <span class="name">{{ student.name }}</span>
+            <span class="email">{{ student.id }}</span>
+            <span class="email">{{ student.email }}</span>
+
+        </div>
+    </li>
+    {% empty %}
+    <p style="text-align: center; padding: 20px; color: #777;">No students found in the database.</p>
+    {% endfor %}
+</ul>
+            </aside>
+
+            <main class="composer-panel">
+                <form id="emailForm" action="#" method="POST">
+                {% csrf_token %}
+                    <div class="form-group">
+                        <label for="recipient-to">To:</label>
+                        <div id="recipient-to" class="recipient-field">No recipients selected</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" name="subject" placeholder="Enter email subject">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email-body">Message</label>
+                        <textarea id="email-body" name="email-body" placeholder="Write your message here..."></textarea>
+                    </div>
+
+                    <div class="composer-actions">
+                        <button type="button" class="btn btn-draft" id="saveDraftBtn">Save Draft</button>
+                        <button type="submit" class="btn btn-send">
+                            <i class="fas fa-paper-plane"></i> Send Email
+                        </button>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <div id="messageBoxOverlay" class="message-box-overlay">
+        <div class="message-box-content">
+            <h3 id="messageBoxTitle"></h3>
+            <p id="messageBoxText"></p>
+            <button id="messageBoxClose" class="btn-close">OK</button>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script type="module">
+        // Initialize studentsData by reading from the HTML list
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const studentSearchInput = document.getElementById('studentSearch');
+            const studentList = document.getElementById('studentList');
+            // No need to get studentItems directly here if you're using the updated renderStudentList logic
+            // that relies on studentsData for filtering.
+
+            // Ensure this function is defined as it's used by the search.
+            // If you have a separate file for this, ensure it's loaded before this script.
+            const renderStudentList = (studentArray) => {
+                studentList.innerHTML = ''; // Clear existing list items
+                if (studentArray.length === 0) {
+                    studentList.innerHTML = '<p style="text-align: center; padding: 20px; color: #777;">No students found.</p>';
+                    return;
+                }
+                studentArray.forEach((student, index) => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'student-item';
+                    const studentId = student.id || `dynamic-${Date.now()}-${index}`;
+                    listItem.innerHTML = `
+                        <input type="checkbox" class="student-checkbox" data-email="${student.email}" data-id="${studentId}">
+                        <div class="student-info">
+                            <span class="name">${student.name || 'N/A'}</span>
+                            <span class="email">${student.email || 'N/A'}</span>
+                        </div>
+                    `;
+                    studentList.appendChild(listItem);
+                });
+                // After rendering, ensure the recipients are updated if any were previously checked
+                updateRecipients();
+            };
+
+            // Initialize studentsData by reading from the HTML list (if hardcoded initially)
+            // Or ensure studentsData is populated correctly if coming from Django context via a separate script.
+            let studentsData = []; // This will hold all student objects for searching
+
+            // Function to populate studentsData from the DOM if starting with hardcoded HTML or Django rendered data
+            const populateStudentsDataFromDOM = () => {
+                studentsData = []; // Clear existing data
+                const listItems = studentList.querySelectorAll('.student-item');
+                listItems.forEach(item => {
+                    const checkbox = item.querySelector('.student-checkbox');
+                    const name = item.querySelector('.name').textContent;
+                    const email = item.querySelector('.email').textContent;
+                    const id = checkbox.dataset.id; // Get the ID from data-id attribute
+                    studentsData.push({ id, name, email });
+                });
+            };
+
+            // Call this initially to get all students into studentsData
+            populateStudentsDataFromDOM();
+
+
+            studentSearchInput.addEventListener('keyup', function() {
+                const searchTerm = studentSearchInput.value.toLowerCase().trim(); // Get search term, lowercase, and trim whitespace
+
+                if (searchTerm === '') {
+                    // If search box is empty, show all students
+                    renderStudentList(studentsData);
+                } else {
+                    // Filter based on name, email, or ID
+                    const filteredStudents = studentsData.filter(student =>
+                        (student.name && student.name.toLowerCase().includes(searchTerm)) ||
+                        (student.email && student.email.toLowerCase().includes(searchTerm)) ||
+                        (student.id && String(student.id).toLowerCase().includes(searchTerm)) // Search by ID
+                    );
+                    renderStudentList(filteredStudents);
+                }
+            });
+
+            // (Your other existing JavaScript for updateRecipients, selectAll, etc. would go here)
+            // Ensure updateRecipients and other functions are accessible here.
+            // ... (rest of your existing script, including updateRecipients, selectAll, Excel import, etc.) ...
+        });
+        let studentsData = [];
+        const studentList = document.getElementById('studentList');
+
+        // Function to populate studentsData from the DOM
+        const populateStudentsDataFromDOM = () => {
+            studentsData = []; // Clear existing data
+            const listItems = studentList.querySelectorAll('.student-item');
+            listItems.forEach(item => {
+                const checkbox = item.querySelector('.student-checkbox');
+                const name = item.querySelector('.name').textContent;
+                const email = item.querySelector('.email').textContent;
+                const id = checkbox.dataset.id;
+                studentsData.push({ id, name, email });
+            });
+        };
+
+        // Call this function initially
+        populateStudentsDataFromDOM();
+
+
+        const studentSearch = document.getElementById('studentSearch');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const recipientField = document.getElementById('recipient-to');
+        const emailForm = document.getElementById('emailForm');
+        const saveDraftBtn = document.getElementById('saveDraftBtn');
+
+        // Message Box elements
+        const messageBoxOverlay = document.getElementById('messageBoxOverlay');
+        const messageBoxTitle = document.getElementById('messageBoxTitle');
+        const messageBoxText = document.getElementById('messageBoxText');
+        const messageBoxClose = document.getElementById('messageBoxClose');
+
+        /**
+         * Displays a custom message box instead of alert().
+         * @param {string} title - The title of the message box.
+         * @param {string} message - The message content.
+         */
+        const showMessage = (title, message) => {
+            messageBoxTitle.textContent = title;
+            messageBoxText.textContent = message;
+            messageBoxOverlay.classList.add('show');
+        };
+
+        // Close message box when OK button is clicked
+        messageBoxClose.addEventListener('click', () => {
+            messageBoxOverlay.classList.remove('show');
+        });
+
+        /**
+         * Renders the student list in the UI based on the current `studentsData` array.
+         * This function is now also used after search/excel upload to rebuild the list.
+         * @param {Array<Object>} studentArray - An array of student objects.
+         */
+        const renderStudentList = (studentArray) => {
+            studentList.innerHTML = ''; // Clear existing list items
+            if (studentArray.length === 0) {
+                studentList.innerHTML = '<p style="text-align: center; padding: 20px; color: #777;">No students found.</p>';
+                return;
+            }
+            studentArray.forEach((student, index) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'student-item';
+                const studentId = student.id || `dynamic-${Date.now()}-${index}`; // Fallback ID for dynamically added
+                listItem.innerHTML = `
+                    <input type="checkbox" class="student-checkbox" data-email="${student.email}" data-id="${studentId}">
+                    <div class="student-info">
+                        <span class="name">${student.name || 'N/A'}</span>
+                        <span class="email">${student.email || 'N/A'}</span>
+                    </div>
+                `;
+                studentList.appendChild(listItem);
+            });
+            updateRecipients(); // Update recipients after rendering
+        };
+
+        /**
+         * Updates the recipient field based on selected checkboxes.
+         */
+        const updateRecipients = () => {
+            const selectedCheckboxes = document.querySelectorAll('.student-checkbox:checked');
+            const selectedEmails = Array.from(selectedCheckboxes).map(cb => cb.dataset.email);
+
+            if (selectedEmails.length > 0) {
+                recipientField.textContent = selectedEmails.join(', ');
+                recipientField.style.color = 'var(--dark-text)';
+            } else {
+                recipientField.textContent = 'No recipients selected';
+                recipientField.style.color = '#777'; // Using fixed value for text-light-color
+            }
+        };
+
+        // Event Listeners
+        // Use DOMContentLoaded to ensure the list elements exist before attaching listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Re-call updateRecipients to ensure initial state is correct after DOM loads
+            updateRecipients();
+
+            studentList.addEventListener('change', (e) => {
+                // Delegated event listener for checkboxes
+                if (e.target.classList.contains('student-checkbox')) {
+                    updateRecipients();
+                    // Update selectAll checkbox status
+                    const allCheckboxes = document.querySelectorAll('.student-checkbox');
+                    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+                    selectAllCheckbox.checked = allChecked;
+                }
+            });
+
+            selectAllCheckbox.addEventListener('change', () => {
+                const checkboxes = document.querySelectorAll('.student-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectAllCheckbox.checked;
+                });
+                updateRecipients();
+            });
+
+            studentSearch.addEventListener('input', () => {
+                const searchTerm = studentSearch.value.toLowerCase();
+                const filteredStudents = studentsData.filter(student =>
+                    (student.name && student.name.toLowerCase().includes(searchTerm)) ||
+                    (student.email && student.email.toLowerCase().includes(searchTerm))
+                );
+                renderStudentList(filteredStudents);
+                // After filtering, uncheck 'Select All' as the visible list might not correspond to all data.
+                selectAllCheckbox.checked = false;
+            });
+
+            document.getElementById('excelFile').addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) {
+                    return; // No file selected
+                }
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+
+                    const json = XLSX.utils.sheet_to_json(sheet);
+                    const filteredJson = json.map(row => ({
+                        name: row["Name"] || row["name"] || row["Full Name"] || "",
+                        email: row["Email ID"] || row["Email"] || row["EmailId"] || ""
+                    }));
+
+                    try {
+                        const newStudents = filteredJson.map((student, index) => {
+                            if (typeof student !== 'object' || student === null || !student.name || !student.email) {
+                                return null;
+                            }
+                            return {
+                                id: student.id || `excel-${Date.now()}-${index}`,
+                                name: String(student.name),
+                                email: String(student.email)
+                            };
+                        }).filter(student => student !== null);
+
+                        if (newStudents.length === 0) {
+                            showMessage('Load Error', 'No valid student entries found in the Excel data. Ensure each row has "Name" and "Email" columns.');
+                            return;
+                        }
+
+                        studentsData = newStudents; // Replace existing data with loaded Excel data
+                        renderStudentList(studentsData); // Re-render the list with new data
+                        showMessage('Load Success', `Successfully loaded ${studentsData.length} students from Excel.`);
+                        e.target.value = '';
+                    } catch (error) {
+                        showMessage('Processing Error', 'Failed to process Excel data. Ensure column headers are correct (e.g., "Name", "Email").');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+
+            saveDraftBtn.addEventListener('click', () => {
+                const subject = document.getElementById('subject').value;
+                const message = document.getElementById('email-body').value;
+                const selectedCheckboxes = document.querySelectorAll('.student-checkbox:checked');
+                const selectedEmails = Array.from(selectedCheckboxes).map(cb => cb.dataset.email);
+
+                if (!subject && !message && selectedEmails.length === 0) {
+                    showMessage('Save Draft', 'There is no content to save as a draft.');
+                    return;
+                }
+
+                
+
+                showMessage('Draft Saved', 'Your email has been saved as a draft locally (check console).');
+            });
+
+            emailForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const selectedCheckboxes = document.querySelectorAll('.student-checkbox:checked');
+                const recipientsCount = selectedCheckboxes.length;
+                const recipientEmails = Array.from(selectedCheckboxes).map(cb => cb.dataset.email);
+                const subject = document.getElementById('subject').value.trim();
+                const message = document.getElementById('email-body').value.trim();
+
+                if (recipientsCount === 0) {
+                    showMessage('Validation Error', 'Please select at least one recipient.');
+                    return;
+                }
+                if (!subject) {
+                    showMessage('Validation Error', 'Please enter an email subject.');
+                    return;
+                }
+                if (!message) {
+                    showMessage('Validation Error', 'The message body cannot be empty.');
+                    return;
+                }
+
+                var formData = new FormData();
+                var csrf_token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                formData.append("csrfmiddlewaretoken", csrf_token);
+                formData.append("email_recipients", JSON.stringify(recipientEmails));
+                formData.append("subject", subject);
+                formData.append("message", message);
+
+                try {
+                    const response = await fetch("/sendemails/", {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showMessage('Email Sent!', data.message || `Email successfully sent to ${recipientsCount} student(s)!`);
+                        emailForm.reset();
+                        document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = false);
+                        selectAllCheckbox.checked = false;
+                        updateRecipients();
+                    } else {
+                        showMessage('Email Sending Failed', data.error || 'There was an error sending the email. Please try again.');
+                    }
+                } catch (error) {
+                    showMessage('Network Error', 'Could not reach the server. Please check your internet connection.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

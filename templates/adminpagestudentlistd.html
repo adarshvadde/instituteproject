@@ -1,0 +1,77 @@
+{% load custom_fil %}
+
+{% block content %}
+<div id="students" class="page active">
+    <div class="page-header">
+        <h1>Student Management</h1>
+        <div class="filter-controls">
+            <label for="batchFilter" style="margin-bottom: 0;">Filter by Batch:</label>
+            <select id="batchFilter">
+                <option value="all">All Batches</option>
+                <option value="Ignite">Ignite</option>
+                <option value="Elite">Elite</option>
+                <option value="Elite Premium">Elite Premium</option>
+            </select>
+        </div>
+    </div>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Batch</th>
+                    <th>Gender</th>
+                    <th>Qualification</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+                {% for application in applications %}
+                    <tr class="student-row" data-batch="{{ application.model_name }}">
+                        <td>{{ application.studentid }}</td>
+                        <td>{{ application.first_name }} {{ application.last_name }}</td>
+                        <td>{{ application.model_name }}</td>
+                        <td>{{ application.gender }}</td>
+                        <td>{{ application.qualification }}</td>
+                        <td>{{ application.email }}</td>
+                        <td>{{ application.mobile }}</td>
+                        <td class="action-icons" style='font-size:11px'>
+                            <a href="/adminstudentprofile/{{adminlinks}}/{{application.unique_id.unique_id|get_id}}"><i class="fas fa-eye view-profile-icon" title="View Profile"></i></a>
+                            <i class="fas fa-edit edit-student-icon" title="Edit Student"></i>
+                            <i class="fas fa-trash" title="Delete"></i>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const batchFilter = document.getElementById('batchFilter');
+        const studentTableBody = document.getElementById('studentTableBody');
+        const studentRows = studentTableBody.querySelectorAll('.student-row');
+
+        batchFilter.addEventListener('change', function() {
+            const selectedBatch = this.value; // 'all', 'Ignite', 'Elite', etc.
+
+            studentRows.forEach(row => {
+                const rowBatch = row.dataset.batch; // Get the batch from data-batch attribute
+
+                if (selectedBatch === 'all' || rowBatch === selectedBatch) {
+                    row.style.display = ''; // Show the row
+                } else {
+                    row.style.display = 'none'; // Hide the row
+                }
+            });
+        });
+
+        // Initialize the filter on page load (e.g., to show all students initially)
+        batchFilter.dispatchEvent(new Event('change'));
+    });
+</script>
+{% endblock %}

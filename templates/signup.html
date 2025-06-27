@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+{% load widget_tweaks %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SVR Registration</title>
+<script src=
+"https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
+    </script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f1f1f1;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .register-container {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .register-container h2 {
+      text-align: center;
+      margin-bottom: 24px;
+      color: #1d3557;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .email-otp-wrapper {
+      display: flex;
+      gap: 10px;
+    }
+
+    .email-otp-wrapper input {
+      flex: 1;
+    }
+
+    .email-otp-wrapper button {
+      padding: 10px 15px;
+      background-color: #457b9d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .email-otp-wrapper button:hover {
+      background-color: #2f5c7d;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      background-color: #1d3557;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #14314f;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 13px;
+    }
+
+    .login-link a {
+      color: #1d3557;
+      text-decoration: none;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    .errorlist, .error-msg {
+      color: red;
+      font-size: 13px;
+      margin: 5px 0 0;
+    }
+
+    .success-msg {
+      color: green;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .otp-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .otp-actions button {
+      padding: 5px 5px;
+      width: 120px;
+      background-color: #457b9d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <h2>SVR Registration</h2>
+    <form method="post" >
+      {% csrf_token %}
+      {% if form1.non_field_errors %}
+        <ul class="errorlist">{{ form1.non_field_errors }}</ul>
+      {% endif %}
+
+      <div class="form-group">
+        <label for="username">Full Name</label>
+        {% render_field form1.username class="form-control" placeholder="Username" %}
+        {{ form1.username.errors }}
+      </div>
+
+      <div class="form-group">
+        <label for="mobile">Mobile Number</label>
+        {% render_field form1.phone_number class="form-control" placeholder="Mobile Number" %}
+        {{ form1.phone_number.errors }}
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email ID</label>
+        <div class="email-otp-wrapper">
+          {% render_field form1.email class="form-control" placeholder="Email" id="email" %}
+          <button type="button" onclick="sendOtp()">Send OTP</button>
+        </div>
+        {{ form1.email.errors }}<span id="emailStatus" class="error-msg"></span>
+      </div>
+
+      <div class="form-group" id="otpSection" style="display: none;">
+        <label for="otp">Enter OTP</label>
+        <div class="otp-actions">
+                  <input type="number" id="otp" name="otp" placeholder="Enter OTP sent to your email" />
+          <button type="button" onclick="verifyOTP()">Verify OTP</button>
+        </div>
+        <div id="otpMessage" class="error-msg"><span id="otpStatus"></span></div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Create Password</label>
+        {% render_field form1.password class="form-control" type="password" placeholder="Password" autocomplete="off" %}
+        {{ form1.password.errors }}
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" name="confirm_password" placeholder="Confirm your password" required oninput="validateForm()"/>
+        <div id="passwordError" class="error-msg"></div>
+      </div>
+
+      <button type="submit">Register</button>
+
+      <div class="login-link">
+        Already have an account? <a href="/studentlogin">Login here</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function sendOtp() {
+  const email = document.getElementById('email').value;
+  const status = document.getElementById('emailStatus');
+
+  if (!email) {
+    status.innerHTML = "<span style='color:red'>Please enter a valid email.</span>";
+    return;
+  }
+
+  var formData = new FormData();
+        csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
+        formData.append("csrfmiddlewaretoken", csrf_token);
+        formData.append("email", $('input[name="email"]').val());
+
+        $.ajax({
+        type:'POST',
+        url:"/send_otp/",
+        processData: false,
+        contentType : false,
+        data:formData,
+          success: function (data) {
+    
+          }
+        })
+
+  .then(data => {
+    if (data.status === 'success') {
+      status.innerHTML = "<span style='color:green'>OTP sent to your email.</span>";
+      document.getElementById('otpSection').style.display = 'block';
+    } else {
+      status.innerHTML = "<span style='color:red'>Failed to send OTP.</span>";
+    }
+  });
+}
+
+function verifyOTP() {
+  const status = document.getElementById('otpStatus');
+
+  var formData = new FormData();
+        csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
+        formData.append("csrfmiddlewaretoken", csrf_token);
+        formData.append("otp", $('input[name="otp"]').val());
+
+        $.ajax({
+        type:'POST',
+        url:"/verify_otp/",
+        processData: false,
+        contentType : false,
+        data:formData,
+          success: function (data) {
+    
+          }
+        })
+  .then(data => {
+    if (data.status === 'success') {
+      status.innerHTML = "<span style='color:green'>OTP verified successfully.</span>";
+    } else {
+      status.innerHTML = "<span style='color:red'>Invalid OTP. Try again.</span>";
+    }
+  });
+}
+
+function getCSRFToken() {
+  return document.cookie.split('; ')
+    .find(row => row.startsWith('csrftoken'))
+    ?.split('=')[1];
+}
+
+function validateForm() {
+  const password = document.querySelector('input[name="password"]').value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+  const errorDiv = document.getElementById("passwordError");
+
+  if (!password || !confirmPassword) {
+    errorDiv.textContent = "Please fill in all fields.";
+    return false;
+  }
+
+  if (password !== confirmPassword) {
+    errorDiv.textContent = "Passwords do not match!";
+        return false;
+      }
+
+      errorDiv.textContent = "";
+      return true;
+    }
+  </script>
+</body>
+</html>
